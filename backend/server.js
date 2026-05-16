@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
 import express from "express";
+import cors from "cors";
 import authRoutes from "./src/routes/auth.routes.js";
 import connectDb from "./src/config/connectdb.js";
 import productRoutes from "./src/routes/product.routes.js";
@@ -11,6 +12,13 @@ import orderRoutes from "./src/routes/order.routes.js";
 const app = express();
 
 await connectDb();
+
+app.use(
+  cors({
+    origin: ["http://localhost:8081", "http://localhost:19006"],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
