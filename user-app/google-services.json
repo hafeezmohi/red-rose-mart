@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "184521565363",
+    "project_id": "red-rose-mart-869f9",
+    "storage_bucket": "red-rose-mart-869f9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184521565363:android:580c8132a5106f9fa67cc6",
+        "android_client_info": {
+          "package_name": "com.muzzu8421.redrosemartapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB75R99cxpd0xdguvapxzFd7kcJuaIRTBM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
