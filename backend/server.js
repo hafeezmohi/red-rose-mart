@@ -13,12 +13,7 @@ const app = express();
 
 await connectDb();
 
-app.use(
-  cors({
-    origin: ["http://localhost:8081", "http://localhost:19006"],
-    credentials: true,
-  }),
-);
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -35,6 +30,6 @@ app.use("/api/cart", cartRoutes);
 
 app.use("/api/orders", orderRoutes);
 
-app.listen(5000, () => {
+app.listen(5000, "0.0.0.0", () => {
   console.log("Server is running on port 5000");
 });

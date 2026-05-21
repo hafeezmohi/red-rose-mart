@@ -12,7 +12,20 @@
           "package_name": "com.muzzu8421.redrosemartapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "184521565363-5uau29o33q4mvljefbd55nnicrvgnkal.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.muzzu8421.redrosemartapp",
+            "certificate_hash": "1592b885a19d9877d5444de06a2d95b0ba9de23a"
+          }
+        },
+        {
+          "client_id": "184521565363-djapqg9i0236ifkpp7t38el2ubflq1n7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB75R99cxpd0xdguvapxzFd7kcJuaIRTBM"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184521565363-djapqg9i0236ifkpp7t38el2ubflq1n7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

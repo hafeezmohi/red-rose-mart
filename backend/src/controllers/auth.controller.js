@@ -101,30 +101,27 @@ export const getMe = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone, address } = req.body;
 
-    if (!phone) {
-      return sendError(res, 400, "Phone number is required");
-    }
+    if (!phone) return sendError(res, 400, 'Phone number is required');
 
-    // basic validation
-    if (!/^\+?[\d\s\-]{10,15}$/.test(phone)) {
-      return sendError(res, 400, "Invalid phone number");
-    }
+    const updateData = { phone };
+    if (address) updateData.address = address;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { phone },
-      { new: true },
+      updateData,
+      { new: true }
     );
 
-    sendSuccess(res, 200, "Profile updated", {
+    sendSuccess(res, 200, 'Profile updated', {
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         avatar: user.avatar,
         phone: user.phone,
+        address: user.address,
         role: user.role,
         isProfileComplete: !!user.phone,
       },
