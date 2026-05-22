@@ -40,6 +40,7 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: { type: Date },
     cancelledAt: { type: Date },
     cancellationReason: { type: String },
+    deliveryOtp: { type: String, default: null },
   },
   { timestamps: true }
 );

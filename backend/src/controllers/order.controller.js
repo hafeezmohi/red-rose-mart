@@ -3,44 +3,65 @@ import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import { sendError, sendSuccess } from "../utils/response.js";
 
-// @desc    Place order from cart
+// Generate a random 4-digit OTP as a string
+const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
+
+// ─────────────────────────────────────────────
+// @desc    Place a new order from the user's cart
 // @route   POST /api/orders
-// @access  Private
+// @access  Private (logged-in user)
+// ─────────────────────────────────────────────
 export const placeOrder = async (req, res, next) => {
   try {
     const { deliveryAddress } = req.body;
 
+    // Ensure delivery address is provided
     if (!deliveryAddress) {
       return sendError(res, 400, "Delivery address is required");
     }
 
     const { street, city, pincode } = deliveryAddress;
+
+    // Ensure all address fields are present
     if (!street || !city || !pincode) {
       return sendError(res, 400, "Street, city and pincode are required");
     }
 
-    // get cart
+    // Fetch the user's cart with product details populated
     const cart = await Cart.findOne({ user: req.user._id }).populate(
       "items.product"
     );
 
+    // Reject if cart is empty or doesn't exist
     if (!cart || cart.items.length === 0) {
       return sendError(res, 400, "Cart is empty");
     }
 
-    // validate stock and build order items
+    // Validate each cart item's stock and build the order items array
     const orderItems = [];
     for (const item of cart.items) {
       const product = item.product;
 
+      // Reject if product has been deleted or deactivated
       if (!product || !product.isActive) {
-        return sendError(res, 400, `Product ${product?.name} is no longer available`);
+        return sendError(
+          res,
+          400,
+          `Product ${product?.name} is no longer available`
+        );
       }
 
+      // Reject if requested quantity exceeds available stock
       if (product.stock < item.quantity) {
-        return sendError(res, 400, `Only ${product.stock} units of ${product.name} in stock`);
+        return sendError(
+          res,
+          400,
+          `Only ${product.stock} units of ${product.name} in stock`
+        );
       }
 
+      // Snapshot product details at the time of order
+      // (so future price/name changes don't affect this order)
       orderItems.push({
         product: product._id,
         name: product.name,
@@ -50,14 +71,15 @@ export const placeOrder = async (req, res, next) => {
       });
     }
 
-    // calculate prices
+    // Calculate order totals
     const itemsPrice = orderItems.reduce(
-      (total, item) => total + item.price * item.quantity, 0
+      (total, item) => total + item.price * item.quantity,
+      0
     );
     const deliveryFee = 40;
     const totalPrice = itemsPrice + deliveryFee;
 
-    // create order
+    // Create the order in the database
     const order = await Order.create({
       user: req.user._id,
       items: orderItems,
@@ -68,14 +90,14 @@ export const placeOrder = async (req, res, next) => {
       paymentMethod: "COD",
     });
 
-    // deduct stock
+    // Deduct the ordered quantity from each product's stock
     for (const item of cart.items) {
       await Product.findByIdAndUpdate(item.product._id, {
         $inc: { stock: -item.quantity },
       });
     }
 
-    // clear cart
+    // Clear the user's cart after successful order placement
     cart.items = [];
     await cart.save();
 
@@ -85,29 +107,40 @@ export const placeOrder = async (req, res, next) => {
   }
 };
 
-// @desc    Get my orders
+// ─────────────────────────────────────────────
+// @desc    Get all orders placed by the logged-in user
 // @route   GET /api/orders/my
-// @access  Private
+// @access  Private (logged-in user)
+// ─────────────────────────────────────────────
 export const getMyOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    // Fetch orders belonging to this user, newest first
+    const orders = await Order.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
+
     sendSuccess(res, 200, "Orders fetched", { orders });
   } catch (err) {
     next(err);
   }
 };
 
-// @desc    Get single order
+// ─────────────────────────────────────────────
+// @desc    Get a single order by ID
 // @route   GET /api/orders/:id
-// @access  Private
+// @access  Private (owner or admin)
+// ─────────────────────────────────────────────
 export const getOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
 
     if (!order) return sendError(res, 404, "Order not found");
 
-    // user can only see their own orders
-    if (order.user.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    // Only the order owner or an admin can view the order
+    if (
+      order.user.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return sendError(res, 403, "Not authorized");
     }
 
@@ -117,30 +150,35 @@ export const getOrder = async (req, res, next) => {
   }
 };
 
-// @desc    Cancel order
+// ─────────────────────────────────────────────
+// @desc    Cancel an order (only if placed or confirmed)
 // @route   PATCH /api/orders/:id/cancel
-// @access  Private
+// @access  Private (order owner only)
+// ─────────────────────────────────────────────
 export const cancelOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
 
     if (!order) return sendError(res, 404, "Order not found");
 
+    // Only the order owner can cancel it
     if (order.user.toString() !== req.user._id.toString()) {
       return sendError(res, 403, "Not authorized");
     }
 
+    // Cancellation is only allowed before the order starts preparing
     if (!["placed", "confirmed"].includes(order.orderStatus)) {
       return sendError(res, 400, "Order cannot be cancelled at this stage");
     }
 
-    // restore stock
+    // Restore stock for each cancelled item
     for (const item of order.items) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { stock: item.quantity },
       });
     }
 
+    // Mark order as cancelled with timestamp and reason
     order.orderStatus = "cancelled";
     order.cancelledAt = new Date();
     order.cancellationReason = req.body.reason || "Cancelled by user";
@@ -152,18 +190,23 @@ export const cancelOrder = async (req, res, next) => {
   }
 };
 
-// ---- ADMIN ----
+// ─────────────────────────────────────────────────────
+// ADMIN CONTROLLERS
+// ─────────────────────────────────────────────────────
 
-// @desc    Get all orders
+// @desc    Get all orders with optional status filter and pagination
 // @route   GET /api/orders
 // @access  Admin
+// ─────────────────────────────────────────────────────
 export const getAllOrders = async (req, res, next) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
+
+    // Filter by status if provided, otherwise fetch all orders
     const query = status ? { orderStatus: status } : {};
 
     const orders = await Order.find(query)
-      .populate("user", "name email phone")
+      .populate("user", "name email phone") // include basic user info
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -172,21 +215,38 @@ export const getAllOrders = async (req, res, next) => {
 
     sendSuccess(res, 200, "Orders fetched", {
       orders,
-      pagination: { total, page: Number(page), pages: Math.ceil(total / limit) },
+      pagination: {
+        total,
+        page: Number(page),
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (err) {
     next(err);
   }
 };
 
-// @desc    Update order status
+// ─────────────────────────────────────────────────────
+// @desc    Update order status (admin only)
+//          - Generates a 4-digit OTP when status → out_for_delivery
+//            The OTP is shown to the user in the app and must be
+//            shared with the delivery person to confirm delivery
+//          - Clears the OTP and marks payment as paid when → delivered
 // @route   PATCH /api/orders/:id/status
 // @access  Admin
+// ─────────────────────────────────────────────────────
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
 
-    const validStatuses = ["confirmed", "preparing", "out_for_delivery", "delivered"];
+    // Only allow forward-moving valid statuses
+    const validStatuses = [
+      "confirmed",
+      "preparing",
+      "out_for_delivery",
+      "delivered",
+    ];
+
     if (!validStatuses.includes(status)) {
       return sendError(res, 400, "Invalid status");
     }
@@ -194,11 +254,26 @@ export const updateOrderStatus = async (req, res, next) => {
     const order = await Order.findById(req.params.id);
     if (!order) return sendError(res, 404, "Order not found");
 
+    // Update the order status
     order.orderStatus = status;
-    if (status === "delivered") {
-      order.deliveredAt = new Date();
-      order.paymentStatus = "paid";  // COD paid on delivery
+
+    if (status === "out_for_delivery") {
+      // Generate a fresh 4-digit OTP and save it with the order
+      // This OTP will be displayed on the user's Order Detail screen
+      order.deliveryOtp = generateOtp();
     }
+
+    if (status === "delivered") {
+      // Record delivery timestamp
+      order.deliveredAt = new Date();
+
+      // Mark COD payment as paid since cash is collected on delivery
+      order.paymentStatus = "paid";
+
+      // Clear the OTP — it's no longer needed after delivery is confirmed
+      order.deliveryOtp = null;
+    }
+
     await order.save();
 
     sendSuccess(res, 200, "Order status updated", { order });
