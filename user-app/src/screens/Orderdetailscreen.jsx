@@ -115,6 +115,43 @@ export default function OrderDetailScreen({ route, navigation }) {
           </View>
         )}
 
+        {/* Delivery OTP — shown only when out for delivery */}
+        {order.orderStatus === 'out_for_delivery' && order.deliveryOtp && (
+          <View style={{
+            backgroundColor: '#eff6ff',
+            borderRadius: 20,
+            padding: 20,
+            marginBottom: 16,
+            alignItems: 'center',
+            borderWidth: 1.5,
+            borderColor: '#93c5fd',
+          }}>
+            <Text style={{ fontSize: 13, color: '#3b82f6', fontWeight: '600', marginBottom: 10 }}>
+              🔐 Delivery OTP
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              {order.deliveryOtp.split('').map((digit, i) => (
+                <View key={i} style={{
+                  width: 52, height: 60,
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  borderWidth: 1.5,
+                  borderColor: '#3b82f6',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1d4ed8' }}>
+                    {digit}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <Text style={{ fontSize: 12, color: '#60a5fa', marginTop: 12, textAlign: 'center' }}>
+              Share this OTP with the delivery person to confirm delivery
+            </Text>
+          </View>
+        )}
+
         {/* Cancelled banner */}
         {isCancelled && (
           <View style={{ backgroundColor: '#fef2f2', borderRadius: 16, padding: 16, marginBottom: 16 }}>
