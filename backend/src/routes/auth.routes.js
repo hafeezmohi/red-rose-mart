@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env' }); 
+dotenv.config({ path: '.env' });
 
 import express from "express";
-import { googleAuth, getMe, updateProfile } from "../controllers/auth.controller.js";
+import { googleAuth, getMe, updateProfile, savePushToken } from "../controllers/auth.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
@@ -27,8 +27,16 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
+// Temporary admin token route — remove after testing
+router.get('/admin-token', async (req, res) => {
+  const user = await User.findOne({ role: 'admin' });
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token });
+});
+
 router.post("/google", googleAuth);
-router.get("/me", protect, getMe); 
-router.patch("/profile", protect, updateProfile);  
+router.get("/me", protect, getMe);
+router.patch("/profile", protect, updateProfile);
+router.post('/push-token', protect, savePushToken);
 
 export default router;

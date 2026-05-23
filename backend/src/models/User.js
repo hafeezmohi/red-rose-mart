@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   authProvider: { type: String, enum: ['google'], default: 'google' },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   phone: { type: String },
+  pushToken: { type: String, default: null }, // ← correct place
   address: {
     street: { type: String },
     city: { type: String },

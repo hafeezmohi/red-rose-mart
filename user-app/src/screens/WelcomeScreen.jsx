@@ -2,9 +2,9 @@ import { Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-na
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { registerPushToken } from '../utils/registerPushToken';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
-console.log('API URL:', API_URL);
 
 GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
@@ -48,8 +48,12 @@ export default function WelcomeScreen({ navigation }) {
         return;
       }
 
+      // Save auth data to local storage
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
+
+      // Register push token now that JWT is available in AsyncStorage
+      await registerPushToken();
 
       if (data.isProfileComplete) {
         navigation.replace('Home');

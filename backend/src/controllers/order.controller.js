@@ -2,6 +2,7 @@ import Order from "../models/Order.js";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import { sendError, sendSuccess } from "../utils/response.js";
+import { sendPushNotification } from "../utils/sendPushNotification.js";
 
 // Generate a random 4-digit OTP as a string
 const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
@@ -235,48 +236,43 @@ export const getAllOrders = async (req, res, next) => {
 // @route   PATCH /api/orders/:id/status
 // @access  Admin
 // ─────────────────────────────────────────────────────
+const NOTIFICATION_CONFIG = {
+  confirmed: { title: 'Order Confirmed!', body: 'Your order has been confirmed and is being prepared.' },
+  out_for_delivery: { title: 'Out for Delivery!', body: 'Your order is on its way. Share the OTP with the delivery person.' },
+  delivered: { title: 'Order Delivered!', body: 'Your order has been delivered. Enjoy!' },
+};
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
 
-    // Only allow forward-moving valid statuses
-    const validStatuses = [
-      "confirmed",
-      "preparing",
-      "out_for_delivery",
-      "delivered",
-    ];
+    const validStatuses = ['confirmed', 'preparing', 'out_for_delivery', 'delivered'];
+    if (!validStatuses.includes(status)) return sendError(res, 400, 'Invalid status');
 
-    if (!validStatuses.includes(status)) {
-      return sendError(res, 400, "Invalid status");
-    }
+    // Populate user to get their pushToken
+    const order = await Order.findById(req.params.id).populate('user', 'pushToken');
+    if (!order) return sendError(res, 404, 'Order not found');
 
-    const order = await Order.findById(req.params.id);
-    if (!order) return sendError(res, 404, "Order not found");
-
-    // Update the order status
     order.orderStatus = status;
 
-    if (status === "out_for_delivery") {
-      // Generate a fresh 4-digit OTP and save it with the order
-      // This OTP will be displayed on the user's Order Detail screen
+    if (status === 'out_for_delivery') {
       order.deliveryOtp = generateOtp();
     }
 
-    if (status === "delivered") {
-      // Record delivery timestamp
+    if (status === 'delivered') {
       order.deliveredAt = new Date();
-
-      // Mark COD payment as paid since cash is collected on delivery
-      order.paymentStatus = "paid";
-
-      // Clear the OTP — it's no longer needed after delivery is confirmed
+      order.paymentStatus = 'paid';
       order.deliveryOtp = null;
     }
 
     await order.save();
 
-    sendSuccess(res, 200, "Order status updated", { order });
+    // Send push notification for key status changes only
+    const notif = NOTIFICATION_CONFIG[status];
+    if (notif && order.user?.pushToken) {
+      await sendPushNotification(order.user.pushToken, notif.title, notif.body);
+    }
+
+    sendSuccess(res, 200, 'Order status updated', { order });
   } catch (err) {
     next(err);
   }

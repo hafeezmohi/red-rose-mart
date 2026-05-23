@@ -131,3 +131,16 @@ export const updateProfile = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Save push notification token
+// @route   POST /api/auth/push-token
+// @access  Private
+export const savePushToken = async (req, res, next) => {
+  try {
+    const { pushToken } = req.body;
+    await User.findByIdAndUpdate(req.user._id, { pushToken });
+    sendSuccess(res, 200, 'Push token saved');
+  } catch (err) {
+    next(err);
+  }
+};

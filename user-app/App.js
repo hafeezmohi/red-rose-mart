@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as Notifications from "expo-notifications";
 import SplashScreen from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import CompleteProfileScreen from "./src/screens/CompleteProfileScreen";
@@ -16,6 +17,15 @@ import { CartProvider } from "./src/context/CartContext";
 import { FavoritesProvider } from "./src/context/FavoritesContext";
 import { AddressProvider } from "./src/context/AddressContext";
 import OrderDetailScreen from "./src/screens/Orderdetailscreen";
+
+// Push notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 const Stack = createNativeStackNavigator();
 
