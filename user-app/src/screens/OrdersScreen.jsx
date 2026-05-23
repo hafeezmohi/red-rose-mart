@@ -6,12 +6,10 @@ import BottomNav from '../components/BottomNav';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
 
 const STATUS_CONFIG = {
-  placed:           { label: 'Pending',          emoji: '🕐', color: '#f59e0b', bg: '#fefce8' },
-  confirmed:        { label: 'Pending',          emoji: '🕐', color: '#f59e0b', bg: '#fefce8' },
-  preparing:        { label: 'Pending',          emoji: '🕐', color: '#f59e0b', bg: '#fefce8' },
-  out_for_delivery: { label: 'Out for Delivery', emoji: '🛵', color: '#3b82f6', bg: '#eff6ff' },
-  delivered:        { label: 'Delivered',        emoji: '✅', color: '#22c55e', bg: '#f0fdf4' },
-  cancelled:        { label: 'Cancelled',        emoji: '❌', color: '#ef4444', bg: '#fef2f2' },
+  placed:           { label: 'Pending', color: '#f59e0b', bg: '#fefce8' },
+  out_for_delivery: { label: 'Out for Delivery', color: '#3b82f6', bg: '#eff6ff' },
+  delivered:        { label: 'Delivered', color: '#22c55e', bg: '#f0fdf4' },
+  cancelled:        { label: 'Cancelled', color: '#ef4444', bg: '#fef2f2' },
 };
 
 export default function OrdersScreen({ navigation }) {

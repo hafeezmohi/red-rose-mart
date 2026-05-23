@@ -9,7 +9,8 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
 export default function AddressScreen({ route, navigation }) {
   const { checkoutData } = route.params;
   const [savedAddress, setSavedAddress] = useState(null);
-  const [selectedAddress, setSelectedAddress] = useState(null); // the one used for order
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [detectedAddress, setDetectedAddress] = useState(null);
   const [addressLoading, setAddressLoading] = useState(true);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,8 +25,10 @@ export default function AddressScreen({ route, navigation }) {
         });
         const data = await res.json();
         if (data.success && data.user?.address) {
-          setSavedAddress(data.user.address);
-          setSelectedAddress(data.user.address); // pre-select saved address
+          const { street, city, pincode, coordinates } = data.user.address;
+          const addr = { street, city, pincode, coordinates };
+          setSavedAddress(addr);
+          setSelectedAddress(addr); // pre-select saved address
         }
       } catch (err) {
         console.error('Failed to fetch saved address:', err);
@@ -44,16 +47,24 @@ export default function AddressScreen({ route, navigation }) {
         Alert.alert('Permission Denied', 'Allow location access to detect your address.');
         return;
       }
+
+      // Get precise GPS coordinates
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const { latitude, longitude } = location.coords;
+
+      // Reverse geocode to get human-readable address
       const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
+
       if (place) {
-        const detectedAddress = {
+        const addr = {
           street: [place.streetNumber, place.street, place.district].filter(Boolean).join(', '),
           city: place.city || place.subregion || '',
           pincode: place.postalCode || '',
+          // Save exact GPS pinpoint with the order
+          coordinates: { lat: latitude, lng: longitude },
         };
-        setSelectedAddress(detectedAddress);
+        setDetectedAddress(addr);
+        setSelectedAddress(addr);
       }
     } catch (err) {
       Alert.alert('Error', 'Could not detect location. Please try again.');
@@ -77,6 +88,7 @@ export default function AddressScreen({ route, navigation }) {
       const res = await fetch(`${API_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        // selectedAddress includes coordinates: { lat, lng } for pinpoint delivery
         body: JSON.stringify({ deliveryAddress: selectedAddress }),
       });
       const data = await res.json();
@@ -159,6 +171,12 @@ export default function AddressScreen({ route, navigation }) {
                 <Text style={{ color: '#666', fontSize: 13 }}>
                   {savedAddress.city} - {savedAddress.pincode}
                 </Text>
+                {/* Show pinpoint indicator if coordinates exist */}
+                {savedAddress.coordinates?.lat && (
+                  <Text style={{ color: '#aaa', fontSize: 11, marginTop: 4 }}>
+                    📌 {savedAddress.coordinates.lat.toFixed(5)}, {savedAddress.coordinates.lng.toFixed(5)}
+                  </Text>
+                )}
               </View>
             </View>
           </TouchableOpacity>
@@ -180,13 +198,13 @@ export default function AddressScreen({ route, navigation }) {
             padding: 18,
             marginBottom: 12,
             borderWidth: 2,
-            borderColor: selectedAddress && !isSelected(savedAddress) ? '#A50021' : '#eee',
+            borderColor: detectedAddress && isSelected(detectedAddress) ? '#A50021' : '#eee',
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={{
               width: 40, height: 40, borderRadius: 20,
-              backgroundColor: selectedAddress && !isSelected(savedAddress) ? '#ffeef1' : '#f5f5f5',
+              backgroundColor: detectedAddress && isSelected(detectedAddress) ? '#ffeef1' : '#f5f5f5',
               justifyContent: 'center', alignItems: 'center',
               marginRight: 14,
             }}>
@@ -200,19 +218,28 @@ export default function AddressScreen({ route, navigation }) {
                 <Text style={{ fontWeight: '700', fontSize: 15, color: '#A50021' }}>
                   {detectingLocation ? 'Detecting...' : 'Use Current Location'}
                 </Text>
-                {selectedAddress && !isSelected(savedAddress) && (
+                {detectedAddress && isSelected(detectedAddress) && (
                   <View style={{ backgroundColor: '#A50021', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 }}>
                     <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓ Selected</Text>
                   </View>
                 )}
               </View>
-              {selectedAddress && !isSelected(savedAddress) ? (
-                <Text style={{ color: '#666', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
-                  {selectedAddress.street}{'\n'}{selectedAddress.city} - {selectedAddress.pincode}
-                </Text>
+              {detectedAddress ? (
+                <>
+                  <Text style={{ color: '#666', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
+                    {detectedAddress.street}
+                  </Text>
+                  <Text style={{ color: '#666', fontSize: 13 }}>
+                    {detectedAddress.city} - {detectedAddress.pincode}
+                  </Text>
+                  {/* Show exact GPS coordinates as pinpoint confirmation */}
+                  <Text style={{ color: '#aaa', fontSize: 11, marginTop: 4 }}>
+                    📌 {detectedAddress.coordinates.lat.toFixed(5)}, {detectedAddress.coordinates.lng.toFixed(5)}
+                  </Text>
+                </>
               ) : (
                 <Text style={{ color: '#aaa', fontSize: 13, marginTop: 4 }}>
-                  Tap to detect your current location
+                  Tap to detect your exact location
                 </Text>
               )}
             </View>
@@ -237,7 +264,7 @@ export default function AddressScreen({ route, navigation }) {
           <View style={{ height: 1, backgroundColor: '#f5f5f5', marginBottom: 12 }} />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ color: '#666', fontSize: 15 }}>Payment</Text>
-            <Text style={{ fontWeight: 'bold', color: '#A50021' }}>💵 Cash on Delivery</Text>
+            <Text style={{ fontWeight: 'bold', color: '#A50021' }}>Cash on Delivery</Text>
           </View>
         </View>
 

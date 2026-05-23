@@ -16,19 +16,11 @@ export default function SuccessScreen({ route, navigation }) {
 
       <View style={{ backgroundColor: '#ffffff', borderRadius: 30, padding: 24, width: '100%', marginTop: 35 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
-          <Text style={{ color: '#777', fontSize: 16 }}>Order ID</Text>
-          <Text style={{ fontWeight: 'bold', fontSize: 16 }}>#{order?._id?.slice(-6).toUpperCase() || 'RRM001'}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
-          <Text style={{ color: '#777', fontSize: 16 }}>Total</Text>
-          <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#A50021' }}>₹{order?.totalPrice || 0}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
-          <Text style={{ color: '#777', fontSize: 16 }}>Estimated Delivery</Text>
-          <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#A50021' }}>10 Minutes ⚡</Text>
+          <Text style={{ color: '#000000', fontSize: 16 }}>Total</Text>
+          <Text style={{ color: '#A50021', fontWeight: 'bold', fontSize: 16 }}>₹{order?.totalPrice || 0}</Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: '#777', fontSize: 16 }}>Payment</Text>
+          <Text style={{ color: '#000000', fontSize: 16 }}>Payment</Text>
           <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#2E7D32' }}>Cash on Delivery</Text>
         </View>
       </View>

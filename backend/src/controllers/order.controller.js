@@ -76,7 +76,7 @@ export const placeOrder = async (req, res, next) => {
       (total, item) => total + item.price * item.quantity,
       0
     );
-    const deliveryFee = 40;
+    const deliveryFee = 0;
     const totalPrice = itemsPrice + deliveryFee;
 
     // Create the order in the database
