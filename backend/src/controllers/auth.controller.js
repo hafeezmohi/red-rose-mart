@@ -92,6 +92,7 @@ export const getMe = async (req, res) => {
       phone: req.user.phone,
       role: req.user.role,
       isProfileComplete: !!req.user.phone,
+      address: req.user.address,
     },
   });
 };

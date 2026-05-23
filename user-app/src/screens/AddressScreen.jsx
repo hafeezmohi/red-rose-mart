@@ -1,48 +1,18 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { CartContext } from '../context/CartContext';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
 
-const InputField = ({ label, value, onChangeText, placeholder, multiline, keyboardType, maxLength }) => (
-  <View style={{ marginBottom: 16 }}>
-    <Text style={{ fontSize: 13, fontWeight: '600', color: '#444', marginBottom: 8, marginLeft: 4 }}>
-      {label}
-    </Text>
-    <TextInput
-      placeholder={placeholder}
-      placeholderTextColor="#bbb"
-      value={value}
-      onChangeText={onChangeText}
-      multiline={multiline}
-      keyboardType={keyboardType}
-      maxLength={maxLength}
-      style={{
-        backgroundColor: '#fff',
-        borderWidth: 1.5,
-        borderColor: '#e8e8e8',
-        borderRadius: 14,
-        paddingHorizontal: 16,
-        paddingVertical: multiline ? 14 : 0,
-        height: multiline ? 90 : 52,
-        fontSize: 15,
-        color: '#222',
-        textAlignVertical: multiline ? 'top' : 'center',
-      }}
-    />
-  </View>
-);
-
 export default function AddressScreen({ route, navigation }) {
   const { checkoutData } = route.params;
-  const [street, setStreet] = useState('');
-  const [city, setCity] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [savedAddress, setSavedAddress] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null); // the one used for order
   const [addressLoading, setAddressLoading] = useState(true);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { clearCart } = useContext(CartContext);
 
   useEffect(() => {
@@ -54,10 +24,8 @@ export default function AddressScreen({ route, navigation }) {
         });
         const data = await res.json();
         if (data.success && data.user?.address) {
-          const { street, city, pincode } = data.user.address;
-          if (street) setStreet(street);
-          if (city) setCity(city);
-          if (pincode) setPincode(pincode);
+          setSavedAddress(data.user.address);
+          setSelectedAddress(data.user.address); // pre-select saved address
         }
       } catch (err) {
         console.error('Failed to fetch saved address:', err);
@@ -73,28 +41,34 @@ export default function AddressScreen({ route, navigation }) {
       setDetectingLocation(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Allow location access to auto-fill your address.');
+        Alert.alert('Permission Denied', 'Allow location access to detect your address.');
         return;
       }
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const { latitude, longitude } = location.coords;
       const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (place) {
-        const detectedStreet = [place.streetNumber, place.street, place.district].filter(Boolean).join(', ');
-        setStreet(detectedStreet || '');
-        setCity(place.city || place.subregion || '');
-        setPincode(place.postalCode || '');
+        const detectedAddress = {
+          street: [place.streetNumber, place.street, place.district].filter(Boolean).join(', '),
+          city: place.city || place.subregion || '',
+          pincode: place.postalCode || '',
+        };
+        setSelectedAddress(detectedAddress);
       }
     } catch (err) {
-      Alert.alert('Error', 'Could not detect location. Please enter manually.');
+      Alert.alert('Error', 'Could not detect location. Please try again.');
     } finally {
       setDetectingLocation(false);
     }
   };
 
   const handlePlaceOrder = async () => {
-    if (!street.trim() || !city.trim() || !pincode.trim()) {
-      Alert.alert('Missing Details', 'Please fill all address fields');
+    if (!selectedAddress) {
+      Alert.alert('No Address', 'Please select or detect a delivery address.');
+      return;
+    }
+    if (!selectedAddress.street || !selectedAddress.city || !selectedAddress.pincode) {
+      Alert.alert('Incomplete Address', 'The selected address is incomplete. Please detect location again.');
       return;
     }
     try {
@@ -103,7 +77,7 @@ export default function AddressScreen({ route, navigation }) {
       const res = await fetch(`${API_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ deliveryAddress: { street, city, pincode } }),
+        body: JSON.stringify({ deliveryAddress: selectedAddress }),
       });
       const data = await res.json();
       if (!data.success) { Alert.alert('Error', data.message); return; }
@@ -113,7 +87,7 @@ export default function AddressScreen({ route, navigation }) {
         routes: [{ name: 'Success', params: { order: data.order } }],
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to place order');
+      Alert.alert('Error', 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -127,115 +101,177 @@ export default function AddressScreen({ route, navigation }) {
     );
   }
 
+  const isSelected = (addr) =>
+    addr &&
+    selectedAddress &&
+    addr.street === selectedAddress.street &&
+    addr.city === selectedAddress.city &&
+    addr.pincode === selectedAddress.pincode;
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 20, paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 20, paddingBottom: 100 }}>
 
         <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a' }}>Delivery Address 📍</Text>
         <Text style={{ color: '#888', marginTop: 8, fontSize: 14, lineHeight: 22 }}>
-          We've pre-filled your saved address. Edit or use current location.
+          Choose where you'd like your order delivered.
         </Text>
 
-        {/* Detect location button */}
+        <Text style={{ fontWeight: '700', fontSize: 15, color: '#333', marginTop: 28, marginBottom: 12 }}>
+          Choose Address
+        </Text>
+
+        {/* Saved address card */}
+        {savedAddress ? (
+          <TouchableOpacity
+            onPress={() => setSelectedAddress(savedAddress)}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 18,
+              padding: 18,
+              marginBottom: 12,
+              borderWidth: 2,
+              borderColor: isSelected(savedAddress) ? '#A50021' : '#eee',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              <View style={{
+                width: 40, height: 40, borderRadius: 20,
+                backgroundColor: isSelected(savedAddress) ? '#ffeef1' : '#f5f5f5',
+                justifyContent: 'center', alignItems: 'center',
+                marginRight: 14,
+              }}>
+                <Text style={{ fontSize: 18 }}>🏠</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontWeight: '700', fontSize: 15, color: '#1a1a1a' }}>Saved Address</Text>
+                  {isSelected(savedAddress) && (
+                    <View style={{ backgroundColor: '#A50021', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 }}>
+                      <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓ Selected</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={{ color: '#666', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
+                  {savedAddress.street}
+                </Text>
+                <Text style={{ color: '#666', fontSize: 13 }}>
+                  {savedAddress.city} - {savedAddress.pincode}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ backgroundColor: '#fff', borderRadius: 18, padding: 18, marginBottom: 12, alignItems: 'center' }}>
+            <Text style={{ fontSize: 30, marginBottom: 8 }}>🏠</Text>
+            <Text style={{ color: '#999', fontSize: 14 }}>No saved address found</Text>
+          </View>
+        )}
+
+        {/* Detect current location card */}
         <TouchableOpacity
           onPress={handleDetectLocation}
           disabled={detectingLocation}
+          activeOpacity={0.85}
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#fff5f7',
-            borderRadius: 14,
-            paddingVertical: 14,
-            marginTop: 20,
-            marginBottom: 8,
-            borderWidth: 1.5,
-            borderColor: '#A50021',
-            gap: 8,
+            backgroundColor: '#fff',
+            borderRadius: 18,
+            padding: 18,
+            marginBottom: 12,
+            borderWidth: 2,
+            borderColor: selectedAddress && !isSelected(savedAddress) ? '#A50021' : '#eee',
           }}
         >
-          {detectingLocation
-            ? <ActivityIndicator size="small" color="#A50021" />
-            : <Text style={{ fontSize: 16 }}>📡</Text>
-          }
-          <Text style={{ color: '#A50021', fontWeight: '700', fontSize: 15 }}>
-            {detectingLocation ? 'Detecting Location...' : 'Use Current Location'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: selectedAddress && !isSelected(savedAddress) ? '#ffeef1' : '#f5f5f5',
+              justifyContent: 'center', alignItems: 'center',
+              marginRight: 14,
+            }}>
+              {detectingLocation
+                ? <ActivityIndicator size="small" color="#A50021" />
+                : <Text style={{ fontSize: 18 }}>📡</Text>
+              }
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontWeight: '700', fontSize: 15, color: '#A50021' }}>
+                  {detectingLocation ? 'Detecting...' : 'Use Current Location'}
+                </Text>
+                {selectedAddress && !isSelected(savedAddress) && (
+                  <View style={{ backgroundColor: '#A50021', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓ Selected</Text>
+                  </View>
+                )}
+              </View>
+              {selectedAddress && !isSelected(savedAddress) ? (
+                <Text style={{ color: '#666', fontSize: 13, marginTop: 6, lineHeight: 20 }}>
+                  {selectedAddress.street}{'\n'}{selectedAddress.city} - {selectedAddress.pincode}
+                </Text>
+              ) : (
+                <Text style={{ color: '#aaa', fontSize: 13, marginTop: 4 }}>
+                  Tap to detect your current location
+                </Text>
+              )}
+            </View>
+          </View>
         </TouchableOpacity>
 
-        {/* Divider */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 16 }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: '#e5e5e5' }} />
-          <Text style={{ color: '#aaa', marginHorizontal: 12, fontSize: 13 }}>or enter manually</Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: '#e5e5e5' }} />
-        </View>
-
-        {/* Input fields */}
-        <InputField
-          label="Street / House No"
-          placeholder="House no, street, landmark..."
-          value={street}
-          onChangeText={setStreet}
-          multiline
-        />
-        <InputField
-          label="City"
-          placeholder="City"
-          value={city}
-          onChangeText={setCity}
-        />
-        <InputField
-          label="Pincode"
-          placeholder="6-digit pincode"
-          value={pincode}
-          onChangeText={setPincode}
-          keyboardType="number-pad"
-          maxLength={6}
-        />
-
         {/* Order summary */}
+        <Text style={{ fontWeight: '700', fontSize: 15, color: '#333', marginTop: 20, marginBottom: 12 }}>
+          Order Summary
+        </Text>
         <View style={{
-          backgroundColor: '#ffffff',
-          borderRadius: 20,
+          backgroundColor: '#fff',
+          borderRadius: 18,
           padding: 18,
-          marginTop: 8,
           borderWidth: 1,
           borderColor: '#f0e5e5',
         }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333', marginBottom: 14 }}>
-            Order Summary
-          </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={{ color: '#666', fontSize: 15 }}>Total Amount</Text>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1a1a1a' }}>₹{checkoutData.total}</Text>
           </View>
-          <View style={{ height: 1, backgroundColor: '#f5f5f5', marginBottom: 10 }} />
+          <View style={{ height: 1, backgroundColor: '#f5f5f5', marginBottom: 12 }} />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ color: '#666', fontSize: 15 }}>Payment</Text>
             <Text style={{ fontWeight: 'bold', color: '#A50021' }}>💵 Cash on Delivery</Text>
           </View>
         </View>
 
-        {/* Place order button */}
+      </ScrollView>
+
+      {/* Sticky place order button */}
+      <View style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        backgroundColor: '#f7f3f3',
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 28,
+        borderTopWidth: 1,
+        borderTopColor: '#f0e5e5',
+      }}>
         <TouchableOpacity
-          disabled={loading}
+          disabled={loading || !selectedAddress}
           onPress={handlePlaceOrder}
           style={{
-            backgroundColor: loading ? '#d38c9c' : '#A50021',
+            backgroundColor: !selectedAddress ? '#ccc' : loading ? '#d38c9c' : '#A50021',
             height: 58,
             borderRadius: 18,
             justifyContent: 'center',
             alignItems: 'center',
-            marginTop: 24,
           }}
         >
           {loading
             ? <ActivityIndicator color="#fff" />
-            : <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: 'bold' }}>Place Order 🛒</Text>
+            : <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
+                {selectedAddress ? 'Place Order 🛒' : 'Select an Address'}
+              </Text>
           }
         </TouchableOpacity>
-
-      </ScrollView>
+      </View>
     </View>
   );
 }
