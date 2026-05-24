@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   phone: { type: String },
   password: { type: String, select: false },
-  pushToken: { type: String, default: null }, // ← correct place
+  pushToken: { type: String, default: null },
+  isBlocked: { type: Boolean, default: false },
   address: {
     street: { type: String },
     city: { type: String },

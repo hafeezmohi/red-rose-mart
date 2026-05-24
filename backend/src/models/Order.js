@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-  name: { type: String, required: true },      // snapshot at time of order
-  image: { type: String },                      // snapshot
-  price: { type: Number, required: true },      // snapshot
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  name: { type: String, required: true }, // snapshot at time of order
+  image: { type: String }, // snapshot
+  price: { type: Number, required: true }, // snapshot
   quantity: { type: Number, required: true },
 });
 
@@ -24,16 +28,20 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
-    itemsPrice: { type: Number, required: true },   // subtotal
-    deliveryFee: { type: Number, default: 40 },
+    itemsPrice: { type: Number, required: true }, // subtotal
+    deliveryFee: { type: Number },
     totalPrice: { type: Number, required: true },
 
     paymentMethod: { type: String, default: "COD" },
-    paymentStatus: { type: String, enum: ["pending", "paid"], default: "pending" },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid"],
+      default: "pending",
+    },
 
     orderStatus: {
       type: String,
-      enum: ["placed", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
+      enum: ["placed", "out_for_delivery", "delivered", "cancelled"],
       default: "placed",
     },
 
@@ -42,7 +50,7 @@ const orderSchema = new mongoose.Schema(
     cancellationReason: { type: String },
     deliveryOtp: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Order = mongoose.model("Order", orderSchema);
