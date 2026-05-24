@@ -1,7 +1,36 @@
 import { useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
+
+const MenuItem = ({ label, onPress, isLast }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.7}
+    style={{
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 17,
+      borderBottomWidth: isLast ? 0 : 1,
+      borderBottomColor: '#F0EAEA',
+    }}
+  >
+    <Text style={{ fontSize: 15, color: '#1A1A1A', fontWeight: '500', letterSpacing: 0.1 }}>
+      {label}
+    </Text>
+    <View style={{
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      backgroundColor: '#F7F0F0',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <Text style={{ color: '#A50021', fontSize: 14, fontWeight: '600' }}>›</Text>
+    </View>
+  </TouchableOpacity>
+);
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -26,15 +55,16 @@ export default function ProfileScreen({ navigation }) {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Error', 'WhatsApp not installed');
+      Alert.alert('Error', 'WhatsApp is not installed on this device.');
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
+    Alert.alert('Confirm Logout', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Logout',
+        style: 'destructive',
         onPress: async () => {
           await AsyncStorage.removeItem('token');
           await AsyncStorage.removeItem('user');
@@ -44,44 +74,157 @@ export default function ProfileScreen({ navigation }) {
     ]);
   };
 
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'RR';
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 20, paddingBottom: 140 }}>
-        <View style={{ alignItems: 'center' }}>
-          <View style={{ width: 110, height: 110, borderRadius: 55, backgroundColor: '#A50021', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ fontSize: 44, color: '#ffffff', fontWeight: 'bold' }}>👤</Text>
-          </View>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', marginTop: 20 }}>{user?.name || 'Welcome Back'}</Text>
-          <Text style={{ color: '#666', marginTop: 8 }}>{user?.phone || 'Red Rose Mart Customer'}</Text>
-          {user?.email && <Text style={{ color: '#888', marginTop: 6 }}>{user.email}</Text>}
+    <View style={{ flex: 1, backgroundColor: '#F7F3F3' }}>
+      <StatusBar barStyle="light-content" backgroundColor="#A50021" />
+
+      {/* Header */}
+      <View style={{
+        backgroundColor: '#A50021',
+        paddingTop: 54,
+        paddingBottom: 36,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+      }}>
+        {/* Avatar */}
+        <View style={{
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          backgroundColor: 'rgba(255,255,255,0.18)',
+          borderWidth: 2,
+          borderColor: 'rgba(255,255,255,0.35)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 14,
+        }}>
+          <Text style={{ fontSize: 28, color: '#fff', fontWeight: '700', letterSpacing: 1 }}>
+            {initials}
+          </Text>
         </View>
 
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 22, padding: 20, marginTop: 34 }}>
-          {[
-            { label: '✏️ Edit Profile', screen: 'EditProfile', params: undefined },
-            { label: '📦 My Orders', screen: 'Orders', params: undefined },
-            { label: '❤️ Wishlist', screen: 'Wishlist', params: undefined },
-            { label: '📍 Saved Address', screen: 'Address', params: { checkoutData: { cartItems: [], total: 0 } } },
-          ].map((item, i, arr) => (
-            <TouchableOpacity
-              key={item.label}
-              onPress={() => navigation.navigate(item.screen, item.params)}
-              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: '#f3e5e5' }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.label}</Text>
-              <Text style={{ fontSize: 18 }}>→</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity onPress={handleWhatsApp} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>☎️ WhatsApp Support</Text>
-            <Text style={{ fontSize: 18 }}>→</Text>
-          </TouchableOpacity>
+        <Text style={{ fontSize: 22, fontWeight: '700', color: '#fff', letterSpacing: 0.3 }}>
+          {user?.name || 'Welcome Back'}
+        </Text>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 16 }}>
+          {user?.phone && (
+            <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>
+              {user.phone}
+            </Text>
+          )}
+          {user?.phone && user?.email && (
+            <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' }} />
+          )}
+          {user?.email && (
+            <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>
+              {user.email}
+            </Text>
+          )}
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Account Section */}
+        <Text style={{
+          fontSize: 11,
+          fontWeight: '700',
+          color: '#A50021',
+          letterSpacing: 1.2,
+          textTransform: 'uppercase',
+          marginBottom: 10,
+          marginLeft: 4,
+        }}>
+          Account
+        </Text>
+
+        <View style={{
+          backgroundColor: '#fff',
+          borderRadius: 16,
+          paddingHorizontal: 18,
+          marginBottom: 20,
+          shadowColor: '#A50021',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+          elevation: 2,
+        }}>
+          <MenuItem
+            label="My Orders"
+            onPress={() => navigation.navigate('Orders')}
+          />
+          <MenuItem
+            label="Wishlist"
+            onPress={() => navigation.navigate('Wishlist')}
+          />
+          <MenuItem
+            label="Saved Address"
+            onPress={() => navigation.navigate('Address', { checkoutData: { cartItems: [], total: 0 } })}
+            isLast
+          />
         </View>
 
-        <TouchableOpacity onPress={handleLogout} style={{ backgroundColor: '#A50021', height: 58, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginTop: 34 }}>
-          <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: 'bold' }}>Logout</Text>
+        {/* Support Section */}
+        <Text style={{
+          fontSize: 11,
+          fontWeight: '700',
+          color: '#A50021',
+          letterSpacing: 1.2,
+          textTransform: 'uppercase',
+          marginBottom: 10,
+          marginLeft: 4,
+        }}>
+          Support
+        </Text>
+
+        <View style={{
+          backgroundColor: '#fff',
+          borderRadius: 16,
+          paddingHorizontal: 18,
+          marginBottom: 28,
+          shadowColor: '#A50021',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+          elevation: 2,
+        }}>
+          <MenuItem
+            label="WhatsApp Support"
+            onPress={handleWhatsApp}
+            isLast
+          />
+        </View>
+
+        {/* Logout */}
+        <TouchableOpacity
+          onPress={handleLogout}
+          activeOpacity={0.85}
+          style={{
+            backgroundColor: '#A50021',
+            height: 54,
+            borderRadius: 14,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#A50021',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 10,
+            elevation: 4,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 0.5 }}>
+            Log Out
+          </Text>
         </TouchableOpacity>
       </ScrollView>
+
       <BottomNav navigation={navigation} />
     </View>
   );
