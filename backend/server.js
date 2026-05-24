@@ -8,6 +8,7 @@ import connectDb from "./src/config/connectdb.js";
 import productRoutes from "./src/routes/product.routes.js";
 import cartRoutes from "./src/routes/cart.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 
 app.use("/api/orders", orderRoutes);
+
+app.use('/api/admin', adminRoutes);
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Server is running on port 5000");
