@@ -16,53 +16,44 @@ export const placeOrder = async (req, res, next) => {
   try {
     const { deliveryAddress } = req.body;
 
-    // Ensure delivery address is provided
     if (!deliveryAddress) {
       return sendError(res, 400, "Delivery address is required");
     }
 
     const { street, city, pincode } = deliveryAddress;
 
-    // Ensure all address fields are present
     if (!street || !city || !pincode) {
       return sendError(res, 400, "Street, city and pincode are required");
     }
 
-    // Fetch the user's cart with product details populated
     const cart = await Cart.findOne({ user: req.user._id }).populate(
-      "items.product"
+      "items.product",
     );
 
-    // Reject if cart is empty or doesn't exist
     if (!cart || cart.items.length === 0) {
       return sendError(res, 400, "Cart is empty");
     }
 
-    // Validate each cart item's stock and build the order items array
     const orderItems = [];
     for (const item of cart.items) {
       const product = item.product;
 
-      // Reject if product has been deleted or deactivated
       if (!product || !product.isActive) {
         return sendError(
           res,
           400,
-          `Product ${product?.name} is no longer available`
+          `Product ${product?.name} is no longer available`,
         );
       }
 
-      // Reject if requested quantity exceeds available stock
       if (product.stock < item.quantity) {
         return sendError(
           res,
           400,
-          `Only ${product.stock} units of ${product.name} in stock`
+          `Only ${product.stock} units of ${product.name} in stock`,
         );
       }
 
-      // Snapshot product details at the time of order
-      // (so future price/name changes don't affect this order)
       orderItems.push({
         product: product._id,
         name: product.name,
@@ -72,15 +63,13 @@ export const placeOrder = async (req, res, next) => {
       });
     }
 
-    // Calculate order totals
     const itemsPrice = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,
-      0
+      0,
     );
     const deliveryFee = 0;
     const totalPrice = itemsPrice + deliveryFee;
 
-    // Create the order in the database
     const order = await Order.create({
       user: req.user._id,
       items: orderItems,
@@ -91,14 +80,12 @@ export const placeOrder = async (req, res, next) => {
       paymentMethod: "COD",
     });
 
-    // Deduct the ordered quantity from each product's stock
     for (const item of cart.items) {
       await Product.findByIdAndUpdate(item.product._id, {
         $inc: { stock: -item.quantity },
       });
     }
 
-    // Clear the user's cart after successful order placement
     cart.items = [];
     await cart.save();
 
@@ -115,7 +102,6 @@ export const placeOrder = async (req, res, next) => {
 // ─────────────────────────────────────────────
 export const getMyOrders = async (req, res, next) => {
   try {
-    // Fetch orders belonging to this user, newest first
     const orders = await Order.find({ user: req.user._id }).sort({
       createdAt: -1,
     });
@@ -137,7 +123,6 @@ export const getOrder = async (req, res, next) => {
 
     if (!order) return sendError(res, 404, "Order not found");
 
-    // Only the order owner or an admin can view the order
     if (
       order.user.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
@@ -162,30 +147,94 @@ export const cancelOrder = async (req, res, next) => {
 
     if (!order) return sendError(res, 404, "Order not found");
 
-    // Only the order owner can cancel it
     if (order.user.toString() !== req.user._id.toString()) {
       return sendError(res, 403, "Not authorized");
     }
 
-    // Cancellation is only allowed before the order starts preparing
     if (!["placed", "confirmed"].includes(order.orderStatus)) {
       return sendError(res, 400, "Order cannot be cancelled at this stage");
     }
 
-    // Restore stock for each cancelled item
     for (const item of order.items) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { stock: item.quantity },
       });
     }
 
-    // Mark order as cancelled with timestamp and reason
     order.orderStatus = "cancelled";
     order.cancelledAt = new Date();
     order.cancellationReason = req.body.reason || "Cancelled by user";
     await order.save();
 
     sendSuccess(res, 200, "Order cancelled", { order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────
+// DELIVERY PARTNER CONTROLLERS
+// ─────────────────────────────────────────────────────
+
+// @desc    Get all orders that are currently out for delivery
+// @route   GET /api/orders/delivery
+// @access  Public (no login required)
+// ─────────────────────────────────────────────────────
+export const getDeliveryOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ orderStatus: "out_for_delivery" })
+      .select("-deliveryOtp") // OTP is never sent to frontend
+      .sort({ createdAt: -1 });
+
+    sendSuccess(res, 200, "Delivery orders fetched", { orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Verify OTP entered by delivery partner and mark order as delivered
+//          OTP comparison happens server-side only — never exposed to client
+// @route   PATCH /api/orders/:id/deliver
+// @access  Public (no login required)
+// ─────────────────────────────────────────────────────
+export const deliverOrder = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) return sendError(res, 400, "OTP is required");
+
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "pushToken",
+    );
+
+    if (!order) return sendError(res, 404, "Order not found");
+
+    if (order.orderStatus !== "out_for_delivery") {
+      return sendError(res, 400, "Order is not out for delivery");
+    }
+
+    // Server-side comparison — OTP never leaves the DB
+    if (order.deliveryOtp !== otp) {
+      return sendError(res, 400, "Incorrect OTP. Please try again.");
+    }
+
+    order.orderStatus = "delivered";
+    order.deliveredAt = new Date();
+    order.paymentStatus = "paid";
+    order.deliveryOtp = null; // clear after use
+    await order.save();
+
+    // Notify the customer
+    if (order.user?.pushToken) {
+      await sendPushNotification(
+        order.user.pushToken,
+        "Order Delivered! 🎉",
+        "Your order has been delivered. Enjoy!",
+      );
+    }
+
+    sendSuccess(res, 200, "Order marked as delivered", { order });
   } catch (err) {
     next(err);
   }
@@ -203,11 +252,10 @@ export const getAllOrders = async (req, res, next) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
 
-    // Filter by status if provided, otherwise fetch all orders
     const query = status ? { orderStatus: status } : {};
 
     const orders = await Order.find(query)
-      .populate("user", "name email phone") // include basic user info
+      .populate("user", "name email phone")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -227,52 +275,66 @@ export const getAllOrders = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────
 // @desc    Update order status (admin only)
-//          - Generates a 4-digit OTP when status → out_for_delivery
-//            The OTP is shown to the user in the app and must be
-//            shared with the delivery person to confirm delivery
-//          - Clears the OTP and marks payment as paid when → delivered
+//          Generates OTP when → out_for_delivery
+//          Clears OTP and marks paid when → delivered
 // @route   PATCH /api/orders/:id/status
 // @access  Admin
 // ─────────────────────────────────────────────────────
 const NOTIFICATION_CONFIG = {
-  confirmed: { title: 'Order Confirmed!', body: 'Your order has been confirmed and is being prepared.' },
-  out_for_delivery: { title: 'Out for Delivery!', body: 'Your order is on its way. Share the OTP with the delivery person.' },
-  delivered: { title: 'Order Delivered!', body: 'Your order has been delivered. Enjoy!' },
+  confirmed: {
+    title: "Order Confirmed!",
+    body: "Your order has been confirmed and is being prepared.",
+  },
+  out_for_delivery: {
+    title: "Out for Delivery!",
+    body: "Your order is on its way. Share the OTP with the delivery person.",
+  },
+  delivered: {
+    title: "Order Delivered!",
+    body: "Your order has been delivered. Enjoy!",
+  },
 };
+
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
 
-    const validStatuses = ['confirmed', 'preparing', 'out_for_delivery', 'delivered'];
-    if (!validStatuses.includes(status)) return sendError(res, 400, 'Invalid status');
+    const validStatuses = [
+      "confirmed",
+      "preparing",
+      "out_for_delivery",
+      "delivered",
+    ];
+    if (!validStatuses.includes(status))
+      return sendError(res, 400, "Invalid status");
 
-    // Populate user to get their pushToken
-    const order = await Order.findById(req.params.id).populate('user', 'pushToken');
-    if (!order) return sendError(res, 404, 'Order not found');
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "pushToken",
+    );
+    if (!order) return sendError(res, 404, "Order not found");
 
     order.orderStatus = status;
 
-    if (status === 'out_for_delivery') {
+    if (status === "out_for_delivery") {
       order.deliveryOtp = generateOtp();
     }
 
-    if (status === 'delivered') {
+    if (status === "delivered") {
       order.deliveredAt = new Date();
-      order.paymentStatus = 'paid';
+      order.paymentStatus = "paid";
       order.deliveryOtp = null;
     }
 
     await order.save();
 
-    // Send push notification for key status changes only
     const notif = NOTIFICATION_CONFIG[status];
     if (notif && order.user?.pushToken) {
       await sendPushNotification(order.user.pushToken, notif.title, notif.body);
     }
 
-    sendSuccess(res, 200, 'Order status updated', { order });
+    sendSuccess(res, 200, "Order status updated", { order });
   } catch (err) {
     next(err);
   }

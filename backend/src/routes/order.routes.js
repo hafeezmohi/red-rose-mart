@@ -6,18 +6,37 @@ import {
   cancelOrder,
   getAllOrders,
   updateOrderStatus,
+  getDeliveryOrders,
+  deliverOrder,
 } from "../controllers/order.controller.js";
 import { protect, restrictTo } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// User routes
+// ─────────────────────────────────────────────
+// USER ROUTES
+// ─────────────────────────────────────────────
 router.post("/", protect, placeOrder);
 router.get("/my", protect, getMyOrders);
-router.get("/:id", protect, getOrder);
 router.patch("/:id/cancel", protect, cancelOrder);
 
-// Admin routes
+// ─────────────────────────────────────────────
+// DELIVERY PARTNER ROUTES  (no login required)
+// ─────────────────────────────────────────────
+// ⚠️  These two MUST be declared before  GET /:id
+//     Otherwise Express reads "delivery" as the :id param
+// ─────────────────────────────────────────────
+router.get("/delivery", getDeliveryOrders);
+router.patch("/:id/deliver", deliverOrder);
+
+// ─────────────────────────────────────────────
+// SHARED (owner or admin)
+// ─────────────────────────────────────────────
+router.get("/:id", protect, getOrder);
+
+// ─────────────────────────────────────────────
+// ADMIN ROUTES
+// ─────────────────────────────────────────────
 router.get("/", protect, restrictTo("admin"), getAllOrders);
 router.patch("/:id/status", protect, restrictTo("admin"), updateOrderStatus);
 
