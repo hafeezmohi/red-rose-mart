@@ -10,9 +10,9 @@ import { getAnalytics } from "../controllers/analytics.controller.js";
 
 const router = express.Router();
 
-router.use(protect, restrictTo("admin"));
-
 router.post("/login", adminLogin);
+
+router.use(protect, restrictTo("admin"));
 
 router.get("/users", getUsers);
 
