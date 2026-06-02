@@ -58,7 +58,6 @@ export default function CartScreen({ navigation }) {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1a1a1a' }}>My Cart</Text>
-          <Text style={{ fontSize: 34 }}>🛒</Text>
         </View>
 
         {cartItems.map((item) => (

@@ -55,12 +55,12 @@ export default function OrdersScreen({ navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#A50021']} />}
         contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 18, paddingBottom: 140 }}
       >
-        <Text style={{ fontSize: 30, fontWeight: 'bold', marginBottom: 24 }}>My Orders 📦</Text>
+        <Text style={{ color: '#1a1a1a', fontSize: 30, fontWeight: 'bold', marginBottom: 24 }}>My Orders</Text>
 
         {orders.length === 0 && (
           <View style={{ marginTop: 120, alignItems: 'center' }}>
             <Text style={{ fontSize: 70 }}>📦</Text>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 20 }}>No Orders Yet</Text>
+            <Text style={{ color: '#1a1a1a', fontSize: 24, fontWeight: 'bold', marginTop: 20 }}>No Orders Yet</Text>
             <Text style={{ color: '#666', marginTop: 10 }}>Your placed orders will appear here</Text>
           </View>
         )}

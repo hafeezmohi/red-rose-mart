@@ -1,50 +1,98 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from "react";
 import {
-  Image, ScrollView, Text, TouchableOpacity, View,
-  ActivityIndicator, StatusBar, TextInput,
-} from 'react-native';
-import { CartContext } from '../context/CartContext';
-import { FavoritesContext } from '../context/FavoritesContext';
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  StatusBar,
+  TextInput,
+  Linking,
+} from "react-native";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { CartContext } from "../context/CartContext";
+import { FavoritesContext } from "../context/FavoritesContext";
+import { AddressContext } from "../context/AddressContext";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.1:5000";
 
 export default function ProductScreen({ route, navigation }) {
   const { product } = route.params;
+
   const { addToCart, cartItems } = useContext(CartContext);
+
   const { toggleFavorite, isFavorite } = useContext(FavoritesContext);
-  const [related, setRelated]   = useState([]);
+
+  const { selectedAddress } = useContext(AddressContext);
+
+  const [related, setRelated] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [inCart, setInCart]     = useState(false);
+  const [inCart, setInCart] = useState(false);
+  const [user, setUser] = useState(null);
+
   const liked = isFavorite(product.id);
 
   const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+      )
     : null;
 
   useEffect(() => {
     fetchRelated();
-    const cartItem = cartItems.find(i => i.id === product.id);
+
+    const cartItem = cartItems.find((i) => i.id === product.id);
+
     if (cartItem) setInCart(true);
   }, [product]);
 
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem("user");
+
+        if (userStr) {
+          setUser(JSON.parse(userStr));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   const fetchRelated = async () => {
     try {
-      const res  = await fetch(`${API_URL}/api/products?category=${product.category}&limit=10`);
+      const res = await fetch(
+        `${API_URL}/api/products?category=${product.category}&limit=10`,
+      );
+
       const data = await res.json();
+
       if (data.success) {
         const filtered = data.products
-          .filter(p => p._id !== product.id)
-          .map(p => ({
-            id:       p._id,
-            name:     p.name,
-            image:    p.images?.[0] || `https://placehold.co/150x150/f5f5f5/A50021?text=${encodeURIComponent(p.name)}`,
-            price:    p.discountPrice || p.price,
+          .filter((p) => p._id !== product.id)
+          .map((p) => ({
+            id: p._id,
+            name: p.name,
+            image:
+              p.images?.[0] ||
+              `https://placehold.co/150x150/f5f5f5/A50021?text=${encodeURIComponent(
+                p.name,
+              )}`,
+            price: p.discountPrice || p.price,
             originalPrice: p.discountPrice ? p.price : null,
-            rating:   p.ratings?.average || 0,
+            rating: p.ratings?.average || 0,
+            reviews: p.ratings?.count || 0,
             category: p.category,
-            unit:     p.unit,
-            stock:    p.stock,
+            unit: p.unit,
+            stock: p.stock,
           }));
+
         setRelated(filtered);
       }
     } catch (err) {
@@ -56,344 +104,592 @@ export default function ProductScreen({ route, navigation }) {
     for (let i = 0; i < quantity; i++) {
       addToCart(product);
     }
+
     setInCart(true);
   };
 
+  const displayAddress =
+    selectedAddress ||
+    (user?.address?.street
+      ? `${user.address.street}, ${user.address.city}`
+      : "Set delivery address");
+
+  const shortAddress =
+    displayAddress.length > 28
+      ? displayAddress.slice(0, 28) + "..."
+      : displayAddress;
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#f5f5f5",
+      }}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#0a1f44" />
 
-      {/* Fixed Top Nav bar */}
-      <View style={{
-        backgroundColor: '#0a1f44',
-        paddingTop: 48, paddingBottom: 12,
-        paddingHorizontal: 16,
-        flexDirection: 'row', alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <TouchableOpacity>
-          <Text style={{ color: '#fff', fontSize: 20 }}>☰</Text>
-        </TouchableOpacity>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>Your Location</Text>
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Kagaznagar</Text>
-        </View>
-        <View style={{ flexDirection: 'row', gap: 14 }}>
-          <Text style={{ color: '#fff', fontSize: 18 }}>▦</Text>
-          <Text style={{ color: '#fff', fontSize: 18 }}>📞</Text>
-          <Text style={{ color: '#fff', fontSize: 18 }}>⋮</Text>
-        </View>
-      </View>
+      {/* TOP HEADER */}
+      <View
+        style={{
+          backgroundColor: "#0a1f44",
+          paddingTop: 50,
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 11,
+              }}
+            >
+              Your Location
+            </Text>
 
-      {/* Search bar */}
-      <View style={{
-        backgroundColor: '#0a1f44',
-        paddingHorizontal: 16, paddingBottom: 14,
-      }}>
-        <View style={{
-          flexDirection: 'row', alignItems: 'center',
-          backgroundColor: '#fff', borderRadius: 8,
-          paddingHorizontal: 12, height: 42,
-        }}>
-          <Text style={{ fontSize: 16, marginRight: 8, color: '#999' }}>🔍</Text>
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  marginRight: 4,
+                }}
+              >
+                {shortAddress}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => Linking.openURL("tel:+918074559488")}
+            style={{ padding: 6 }}
+          >
+            <Ionicons name="call" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* SEARCH BAR */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            height: 44,
+            marginTop: 14,
+          }}
+        >
+          <Ionicons
+            name="search"
+            size={18}
+            color="#999"
+            style={{ marginRight: 8 }}
+          />
+
           <TextInput
             placeholder="Search for Products, Brands and More"
             placeholderTextColor="#aaa"
-            style={{ flex: 1, fontSize: 13 }}
+            style={{
+              flex: 1,
+              fontSize: 13,
+              color: "#1a1a1a",
+            }}
             editable={false}
             onFocus={() => navigation.goBack()}
           />
+
+          <Ionicons name="options-outline" size={20} color="#aaa" />
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-
-        {/* Product Image Card */}
-        <View style={{
-          margin: 14,
-          backgroundColor: '#fff',
-          borderRadius: 12,
-          padding: 16,
-          alignItems: 'center',
-          shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
-          position: 'relative',
-        }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 120,
+        }}
+      >
+        {/* PRODUCT IMAGE */}
+        <View
+          style={{
+            marginHorizontal: 14,
+            marginTop: 14,
+            backgroundColor: "#fff",
+            borderRadius: 24,
+            paddingTop: 24,
+            paddingBottom: 20,
+            paddingHorizontal: 18,
+            alignItems: "center",
+            elevation: 3,
+            shadowColor: "#000",
+            shadowOpacity: 0.08,
+            shadowRadius: 10,
+          }}
+        >
+          {/* DISCOUNT */}
           {discount && (
-            <View style={{
-              position: 'absolute', top: 0, left: 0,
-              backgroundColor: '#A50021',
-              paddingHorizontal: 10, paddingVertical: 6,
-              borderTopLeftRadius: 12, borderBottomRightRadius: 12,
-            }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11, textAlign: 'center' }}>
-                {discount}%{'\n'}OFF
+            <View
+              style={{
+                position: "absolute",
+                top: 16,
+                left: 16,
+                backgroundColor: "#A50021",
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 30,
+                zIndex: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontWeight: "700",
+                  fontSize: 12,
+                }}
+              >
+                {discount}% OFF
               </Text>
             </View>
           )}
+
+          {/* WISHLIST */}
+          <TouchableOpacity
+            onPress={() => toggleFavorite(product)}
+            style={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              backgroundColor: "#fff",
+              justifyContent: "center",
+              alignItems: "center",
+              elevation: 4,
+              shadowColor: "#000",
+              shadowOpacity: 0.12,
+              shadowRadius: 6,
+              zIndex: 10,
+            }}
+          >
+            <Ionicons
+              name={liked ? "heart" : "heart-outline"}
+              size={22}
+              color="#A50021"
+            />
+          </TouchableOpacity>
+
           <Image
             source={{ uri: product.image }}
-            style={{ width: 220, height: 180 }}
+            style={{
+              width: 260,
+              height: 240,
+            }}
             resizeMode="contain"
           />
         </View>
 
-        {/* Product Info Card */}
-        <View style={{
-          marginHorizontal: 14, marginBottom: 14,
-          backgroundColor: '#fff', borderRadius: 12,
-          padding: 18,
-          shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
-        }}>
-          {/* Category */}
-          <Text style={{ color: '#888', fontSize: 13, marginBottom: 4 }}>{product.category}</Text>
+        {/* PRODUCT DETAILS */}
+        <View
+          style={{
+            marginHorizontal: 14,
+            marginTop: 14,
+            backgroundColor: "#fff",
+            borderRadius: 24,
+            padding: 22,
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+          }}
+        >
+          <Text
+            style={{
+              color: "#888",
+              fontSize: 12,
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
+            {product.category}
+          </Text>
 
-          {/* Name */}
-          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1a1a1a' }}>{product.name}</Text>
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: "bold",
+              color: "#111",
+              marginTop: 8,
+              lineHeight: 36,
+            }}
+          >
+            {product.name}
+          </Text>
 
-          {/* Price row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 10 }}>
-            <Text style={{ color: '#A50021', fontWeight: 'bold', fontSize: 20 }}>
+          {/* PRICE */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 18,
+            }}
+          >
+            <Text
+              style={{
+                color: "#A50021",
+                fontWeight: "bold",
+                fontSize: 30,
+              }}
+            >
               ₹ {product.price}.00
             </Text>
+
             {product.originalPrice && (
-              <Text style={{ color: '#999', fontSize: 15, textDecorationLine: 'line-through' }}>
+              <Text
+                style={{
+                  color: "#999",
+                  fontSize: 16,
+                  textDecorationLine: "line-through",
+                  marginLeft: 12,
+                }}
+              >
                 ₹{product.originalPrice}.00
               </Text>
             )}
           </View>
 
-          {/* Rating */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 }}>
-            <View style={{
-              backgroundColor: '#2e7d32', borderRadius: 6,
-              paddingHorizontal: 8, paddingVertical: 3,
-              flexDirection: 'row', alignItems: 'center', gap: 3,
-            }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
-                {product.rating} ★
-              </Text>
-            </View>
-            <Text style={{ color: '#666', fontSize: 13 }}>{product.reviews} reviews</Text>
-          </View>
+          {/* RATING */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 14,
+            }}
+          >
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Ionicons
+                key={i}
+                name={i <= Math.round(product.rating) ? "star" : "star-outline"}
+                size={16}
+                color="#f5a623"
+                style={{ marginRight: 2 }}
+              />
+            ))}
 
-          {/* Divider */}
-          <View style={{ height: 1, backgroundColor: '#f0f0f0', marginVertical: 14 }} />
-
-          {/* Availability */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-            <Text style={{ color: '#444', fontSize: 14, fontWeight: '500', width: 110 }}>Availability:</Text>
-            <Text style={{
-              color: product.stock > 0 ? '#A50021' : '#999',
-              fontWeight: '600', fontSize: 14,
-            }}>
-              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            <Text
+              style={{
+                marginLeft: 8,
+                color: "#777",
+                fontSize: 13,
+                fontWeight: "500",
+              }}
+            >
+              {product.reviews || 0} reviews
             </Text>
           </View>
 
-          {/* Rewards */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-            <Text style={{ color: '#444', fontSize: 14, fontWeight: '500', width: 110 }}>Rewards:</Text>
-            <Text style={{ color: '#1a1a1a', fontWeight: '600', fontSize: 14 }}>0</Text>
-          </View>
-
-          {/* Quantity */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ color: '#444', fontSize: 14, fontWeight: '500', width: 110 }}>Quantity:</Text>
-            <View style={{
-              flexDirection: 'row', alignItems: 'center',
-              borderWidth: 1.5, borderColor: '#ddd', borderRadius: 30,
-              overflow: 'hidden',
-            }}>
-              <TouchableOpacity
-                onPress={() => setQuantity(q => Math.max(1, q - 1))}
-                style={{
-                  width: 38, height: 38,
-                  justifyContent: 'center', alignItems: 'center',
-                  backgroundColor: '#A50021',
-                }}
-              >
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', lineHeight: 22 }}>−</Text>
-              </TouchableOpacity>
-              <Text style={{ paddingHorizontal: 20, fontSize: 16, fontWeight: '600', color: '#1a1a1a' }}>
-                {quantity}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setQuantity(q => q + 1)}
-                style={{
-                  width: 38, height: 38,
-                  justifyContent: 'center', alignItems: 'center',
-                  backgroundColor: '#A50021',
-                }}
-              >
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', lineHeight: 22 }}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Divider */}
-          <View style={{ height: 1, backgroundColor: '#f0f0f0', marginVertical: 14 }} />
-
-          {/* Wishlist & Notes row */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity
-              onPress={() => toggleFavorite(product)}
-              style={{ alignItems: 'center', padding: 8 }}
+          {/* STOCK */}
+          <View
+            style={{
+              marginTop: 18,
+              alignSelf: "flex-start",
+              backgroundColor: product.stock > 0 ? "#e8f5e9" : "#f5f5f5",
+              paddingHorizontal: 14,
+              paddingVertical: 7,
+              borderRadius: 30,
+            }}
+          >
+            <Text
+              style={{
+                color: product.stock > 0 ? "#2e7d32" : "#888",
+                fontWeight: "700",
+                fontSize: 13,
+              }}
             >
-              <Text style={{ fontSize: 26 }}>{liked ? '❤️' : '🤍'}</Text>
-            </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: '#f0f0f0' }} />
-            <TouchableOpacity style={{ alignItems: 'center', padding: 8 }}>
-              <Text style={{ fontSize: 22 }}>✏️</Text>
-            </TouchableOpacity>
+              {product.stock > 0 ? "In Stock" : "Out of Stock"}
+            </Text>
+          </View>
+
+          {/* QUANTITY */}
+          <View
+            style={{
+              marginTop: 28,
+            }}
+          >
+            <Text
+              style={{
+                color: "#333",
+                fontWeight: "700",
+                marginBottom: 12,
+                fontSize: 15,
+              }}
+            >
+              Quantity
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 14,
+                  backgroundColor: "#A50021",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 22,
+                    fontWeight: "bold",
+                  }}
+                >
+                  −
+                </Text>
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  minWidth: 60,
+                  height: 46,
+                  borderRadius: 14,
+                  backgroundColor: "#f7f7f7",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "700",
+                    color: "#111",
+                  }}
+                >
+                  {quantity}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setQuantity((q) => q + 1)}
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 14,
+                  backgroundColor: "#A50021",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 22,
+                    fontWeight: "bold",
+                  }}
+                >
+                  +
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
-        {/* Description */}
-        <View style={{
-          marginHorizontal: 14, marginBottom: 14,
-          backgroundColor: '#fff', borderRadius: 12,
-          padding: 18,
-          shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06, shadowRadius: 4, elevation: 1,
-        }}>
-          <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 12 }}>Description</Text>
-          <Text style={{ color: '#555', lineHeight: 24, fontSize: 14 }}>
-            Premium quality grocery product freshly packed for fast delivery. Carefully selected for daily needs and freshness. In India, this is a popular choice when it comes to daily needs. The natural flavour is not only a treat but also provides nutrition. Be it raisins, dates, dehydrated mangoes and berries, there are plenty of options to choose from.
+        {/* DESCRIPTION */}
+        <View
+          style={{
+            marginHorizontal: 14,
+            marginTop: 14,
+            backgroundColor: "#fff",
+            borderRadius: 14,
+            padding: 18,
+          }}
+        >
+          <Text
+            style={{
+              color: "#333",
+              fontSize: 18,
+              fontWeight: "bold",
+              marginBottom: 10,
+            }}
+          >
+            Description
+          </Text>
+
+          <Text
+            style={{
+              color: "#555",
+              lineHeight: 24,
+            }}
+          >
+            Premium quality grocery product freshly packed for fast delivery.
+            Carefully selected for freshness and quality.
           </Text>
         </View>
 
-        {/* Reviews */}
-        <View style={{
-          marginHorizontal: 14, marginBottom: 14,
-          backgroundColor: '#fff', borderRadius: 12, padding: 18,
-          shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06, shadowRadius: 4, elevation: 1,
-        }}>
-          <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 14 }}>
-            Reviews ({product.reviews || 0})
-          </Text>
-          {product.reviews > 0 ? (
-            <View style={{
-              backgroundColor: '#fffbe6', borderRadius: 10, padding: 14,
-              borderLeftWidth: 4, borderLeftColor: '#f5a623',
-            }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#1a1a1a' }}>Customer</Text>
-                <View style={{ flexDirection: 'row' }}>
-                  {[1,2,3,4,5].map(i => (
-                    <Text key={i} style={{ color: i <= Math.round(product.rating) ? '#f5a623' : '#ddd', fontSize: 14 }}>★</Text>
-                  ))}
-                </View>
-              </View>
-              <Text style={{ color: '#555', lineHeight: 22, fontSize: 13 }}>
-                Great product! Exactly as described. Delivery was also very prompt.
-              </Text>
-            </View>
-          ) : (
-            <Text style={{ color: '#aaa', fontSize: 13 }}>No reviews yet.</Text>
-          )}
-        </View>
-
-        {/* Related Products */}
+        {/* RELATED PRODUCTS */}
         {related.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', marginHorizontal: 14, marginBottom: 12, color: '#1a1a1a' }}>
+          <View
+            style={{
+              marginTop: 18,
+              marginBottom: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                marginHorizontal: 14,
+                marginBottom: 14,
+                color: "#1a1a1a",
+              }}
+            >
               You May Also Like
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 14 }}>
-              {related.map(item => {
-                const itemDiscount = item.originalPrice
-                  ? Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)
-                  : null;
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    onPress={() => navigation.push('Product', { product: item })}
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingLeft: 14,
+              }}
+            >
+              {related.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() =>
+                    navigation.push("Product", {
+                      product: item,
+                    })
+                  }
+                  style={{
+                    width: 160,
+                    backgroundColor: "#fff",
+                    borderRadius: 12,
+                    marginRight: 14,
+                    overflow: "hidden",
+                    elevation: 1,
+                  }}
+                >
+                  <Image
+                    source={{ uri: item.image }}
                     style={{
-                      width: 150, backgroundColor: '#fff',
-                      borderRadius: 10, marginRight: 12,
-                      overflow: 'hidden',
-                      shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
+                      width: "100%",
+                      height: 120,
+                      backgroundColor: "#f9f9f9",
                     }}
-                  >
-                    <View style={{ position: 'relative' }}>
-                      <Image
-                        source={{ uri: item.image }}
-                        style={{ width: '100%', height: 100, backgroundColor: '#f9f9f9' }}
-                        resizeMode="contain"
-                      />
-                      {itemDiscount && (
-                        <View style={{
-                          position: 'absolute', top: 0, left: 0,
-                          backgroundColor: '#A50021',
-                          paddingHorizontal: 6, paddingVertical: 3,
-                          borderBottomRightRadius: 6,
-                        }}>
-                          <Text style={{ color: '#fff', fontSize: 9, fontWeight: 'bold' }}>
-                            {itemDiscount}% OFF
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <View style={{ padding: 10 }}>
-                      <Text style={{ color: '#A50021', fontWeight: 'bold', fontSize: 14 }}>₹{item.price}</Text>
-                      <Text numberOfLines={1} style={{ fontWeight: '600', fontSize: 12, color: '#333', marginTop: 2 }}>
-                        {item.name}
-                      </Text>
-                      <View style={{ flexDirection: 'row', marginTop: 4 }}>
-                        {[1,2,3,4,5].map(i => (
-                          <Text key={i} style={{ color: i <= Math.round(item.rating) ? '#f5a623' : '#ddd', fontSize: 10 }}>★</Text>
-                        ))}
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+                    resizeMode="contain"
+                  />
+
+                  <View style={{ padding: 10 }}>
+                    <Text
+                      style={{
+                        color: "#A50021",
+                        fontWeight: "bold",
+                        fontSize: 15,
+                      }}
+                    >
+                      ₹{item.price}
+                    </Text>
+
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        color: "#333",
+                        marginTop: 4,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         )}
       </ScrollView>
 
-      {/* Bottom Buttons */}
-      <View style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        backgroundColor: '#fff',
-        borderTopWidth: 1, borderTopColor: '#f0f0f0',
-        flexDirection: 'row',
-        paddingHorizontal: 0, paddingVertical: 0,
-      }}>
+      {/* BOTTOM BUTTONS */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: 10,
+          left: 0,
+          right: 0,
+          flexDirection: "row",
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#eee",
+        }}
+      >
         <TouchableOpacity
-          onPress={() => inCart ? navigation.navigate('Cart') : handleAddToCart()}
+          onPress={() =>
+            inCart ? navigation.navigate("Cart") : handleAddToCart()
+          }
           style={{
-            flex: 1, height: 56,
-            justifyContent: 'center', alignItems: 'center',
-            borderRightWidth: 1, borderRightColor: '#eee',
+            flex: 1,
+            height: 58,
+            justifyContent: "center",
+            alignItems: "center",
+            borderRightWidth: 1,
+            borderRightColor: "#eee",
           }}
         >
-          <Text style={{ color: '#1a1a1a', fontWeight: 'bold', fontSize: 15, letterSpacing: 0.3 }}>
-            {inCart ? 'GO TO CART' : 'ADD TO CART'}
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: "#1a1a1a",
+            }}
+          >
+            {inCart ? "GO TO CART" : "ADD TO CART"}
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => {
             handleAddToCart();
-            navigation.navigate('Cart');
+            navigation.navigate("Cart");
           }}
           style={{
-            flex: 1, height: 56,
-            backgroundColor: '#f0c000',
-            justifyContent: 'center', alignItems: 'center',
+            flex: 1,
+            height: 58,
+            backgroundColor: "#f0c000",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <Text style={{ color: '#1a1a1a', fontWeight: 'bold', fontSize: 15, letterSpacing: 0.3 }}>BUY NOW</Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: "#1a1a1a",
+            }}
+          >
+            BUY NOW
+          </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Bottom Nav */}
-      {/* BottomNav would go here — keeping consistent with the rest of the app */}
     </View>
   );
 }

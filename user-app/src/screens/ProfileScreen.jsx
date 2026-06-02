@@ -51,7 +51,7 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handleWhatsApp = async () => {
-    const url = `https://wa.me/919381901949?text=${encodeURIComponent('Hello Red Rose Mart, I need support regarding my order.')}`;
+    const url = `https://wa.me/+918074559488?text=${encodeURIComponent('Hello Red Rose Online Grocery, I need support regarding my order.')}`;
     try {
       await Linking.openURL(url);
     } catch {
@@ -163,11 +163,6 @@ export default function ProfileScreen({ navigation }) {
           <MenuItem
             label="Wishlist"
             onPress={() => navigation.navigate('Wishlist')}
-          />
-          <MenuItem
-            label="Saved Address"
-            onPress={() => navigation.navigate('Address', { checkoutData: { cartItems: [], total: 0 } })}
-            isLast
           />
         </View>
 

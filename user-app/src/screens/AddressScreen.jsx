@@ -294,7 +294,7 @@ export default function AddressScreen({ route, navigation }) {
           {loading
             ? <ActivityIndicator color="#fff" />
             : <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-                {selectedAddress ? 'Place Order 🛒' : 'Select an Address'}
+                {selectedAddress ? 'Place Order' : 'Select an Address'}
               </Text>
           }
         </TouchableOpacity>

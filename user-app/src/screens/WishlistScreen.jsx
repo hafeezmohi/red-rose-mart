@@ -50,12 +50,13 @@ export default function WishlistScreen({
             >
                 <Text
                     style={{
+                        color: '#1a1a1a',
                         fontSize: 32,
                         fontWeight: 'bold',
                         marginBottom: 24,
                     }}
                 >
-                    Wishlist ❤️
+                    Wishlist
                 </Text>
 
                 {favorites.length ===
@@ -76,6 +77,7 @@ export default function WishlistScreen({
 
                         <Text
                             style={{
+                                color: '#1a1a1a',
                                 fontSize: 24,
                                 fontWeight: 'bold',
                                 marginTop: 20,
@@ -138,6 +140,7 @@ export default function WishlistScreen({
                                 <Text
                                     numberOfLines={1}
                                     style={{
+                                        color: '#1a1a1a',
                                         fontSize: 18,
                                         fontWeight: 'bold',
                                     }}
@@ -147,7 +150,7 @@ export default function WishlistScreen({
 
                                 <Text
                                     style={{
-                                        color: '#A50021',
+                                        color: '#1a1a1a',
                                         fontSize: 18,
                                         fontWeight: 'bold',
                                         marginTop: 10,

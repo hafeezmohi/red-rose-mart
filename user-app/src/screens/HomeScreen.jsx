@@ -723,7 +723,7 @@ export default function HomeScreen({ navigation, route }) {
         </View>
 
         {featuredProducts.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
+          <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -752,7 +752,7 @@ export default function HomeScreen({ navigation, route }) {
         )}
 
         {bestSellerProducts.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
+          <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -781,7 +781,7 @@ export default function HomeScreen({ navigation, route }) {
         )}
 
         {onSaleProducts.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
+          <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -870,7 +870,7 @@ export default function HomeScreen({ navigation, route }) {
           onPress={() => navigation.navigate("Cart")}
           style={{
             position: "absolute",
-            bottom: 70,
+            bottom: 90,
             left: 16,
             right: 16,
             backgroundColor: "#A50021",

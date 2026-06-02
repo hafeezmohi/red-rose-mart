@@ -462,7 +462,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           >
             <Text style={{ color: "#666" }}>Delivery Fee</Text>
             <Text style={{ color: "#22c55e", fontWeight: "600" }}>
-              {order.deliveryFee === 0 ? "FREE 🎉" : `₹${order.deliveryFee}`}
+              {order.deliveryFee === 0 ? "FREE" : `₹${order.deliveryFee}`}
             </Text>
           </View>
           <View
@@ -544,8 +544,8 @@ export default function OrderDetailScreen({ route, navigation }) {
               }}
             >
               {order.paymentStatus === "paid"
-                ? "✅ Paid"
-                : "💵 Cash on Delivery"}
+                ? "Paid"
+                : "Cash on Delivery"}
             </Text>
           </View>
         </View>

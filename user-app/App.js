@@ -9,7 +9,6 @@ import ProductScreen from "./src/screens/ProductScreen";
 import CartScreen from "./src/screens/CartScreen";
 import OrdersScreen from "./src/screens/OrdersScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
-import EditProfileScreen from "./src/screens/EditProfileScreen";
 import AddressScreen from "./src/screens/AddressScreen";
 import WishlistScreen from "./src/screens/WishlistScreen";
 import SuccessScreen from "./src/screens/SuccessScreen";
@@ -51,7 +50,6 @@ export default function App() {
               <Stack.Screen name="Orders" component={OrdersScreen} />
               <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
               <Stack.Screen name="Profile" component={ProfileScreen} />
-              <Stack.Screen name="EditProfile" component={EditProfileScreen} />
               <Stack.Screen name="Address" component={AddressScreen} />
               <Stack.Screen name="Wishlist" component={WishlistScreen} />
               <Stack.Screen name="Success" component={SuccessScreen} />
