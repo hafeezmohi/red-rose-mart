@@ -86,7 +86,7 @@ export default function OrdersScreen({ navigation }) {
             >
               {/* Header row */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold' }}>
                   #{order._id.slice(-6).toUpperCase()}
                 </Text>
                 <View style={{ backgroundColor: status.bg, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 }}>
