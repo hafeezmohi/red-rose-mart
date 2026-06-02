@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import {
   Image,
   Linking,
@@ -11,6 +11,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
+  Dimensions,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,30 +20,6 @@ import { CartContext } from "../context/CartContext";
 import { AddressContext } from "../context/AddressContext";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.1:5000";
-
-const banners = [
-  {
-    id: "1",
-    title: "GROCERIES",
-    subtitle: "UP TO 50% OFF\nON GROCERIES ONLINE",
-    color: "#A50021",
-    badge: "OFFER",
-  },
-  {
-    id: "2",
-    title: "Dairy Fresh",
-    subtitle: "Delivered daily",
-    color: "#1565c0",
-    badge: "NEW",
-  },
-  {
-    id: "3",
-    title: "Snacks & More",
-    subtitle: "New arrivals",
-    color: "#e65100",
-    badge: "HOT",
-  },
-];
 
 const categories = [
   { id: "all", name: "All Categories", icon: "grid-outline" },
@@ -89,6 +66,8 @@ const SORT_OPTIONS = [
 ];
 
 const PAGE_SIZE = 40;
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const CATEGORY_GRID = [
   {
@@ -182,6 +161,8 @@ export default function HomeScreen({ navigation, route }) {
   const { cartItems, addToCart } = useContext(CartContext);
   const { selectedAddress } = useContext(AddressContext);
 
+  const bannerScrollRef = useRef(null);
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -193,6 +174,22 @@ export default function HomeScreen({ navigation, route }) {
     };
     loadUser();
   }, []);
+
+  // Auto-scroll banner every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = (currentBanner + 1) % 3;
+
+      bannerScrollRef.current?.scrollTo({
+        x: next * (SCREEN_WIDTH - 24),
+        animated: true,
+      });
+
+      setCurrentBanner(next);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentBanner]);
 
   const fetchProducts = useCallback(
     async (category = "All", searchTerm = "", pageNum = 1, append = false) => {
@@ -281,6 +278,8 @@ export default function HomeScreen({ navigation, route }) {
     setAppliedMin("");
     setAppliedMax("");
     setAppliedSort("none");
+    setShowOffersOnly(false);
+    setSelectedCategory("all");
     setShowFilter(false);
   };
 
@@ -319,7 +318,14 @@ export default function HomeScreen({ navigation, route }) {
       appliedMin !== "" ? product.price >= Number(appliedMin) : true;
     const matchesMax =
       appliedMax !== "" ? product.price <= Number(appliedMax) : true;
-    return matchesSearch && matchesCategory && matchesMin && matchesMax;
+    const matchesOffer = showOffersOnly ? product.originalPrice !== null : true;
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesMin &&
+      matchesMax &&
+      matchesOffer
+    );
   });
 
   if (appliedSort === "low_high")
@@ -638,78 +644,62 @@ export default function HomeScreen({ navigation, route }) {
 
         <View
           style={{
-            margin: 14,
-            borderRadius: 12,
+            marginHorizontal: 12,
+            marginTop: 12,
+            marginBottom: 18,
+            borderRadius: 18,
             overflow: "hidden",
-            backgroundColor: "#A50021",
-            height: 130,
           }}
         >
           <ScrollView
+            ref={bannerScrollRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) => {
-              const idx = Math.round(
+              const index = Math.round(
                 e.nativeEvent.contentOffset.x /
                   e.nativeEvent.layoutMeasurement.width,
               );
-              setCurrentBanner(idx);
+              setCurrentBanner(index);
             }}
           >
-            {banners.map((banner) => (
-              <View
-                key={banner.id}
+            {[
+              require("../../assets/banner1.jpeg"),
+              require("../../assets/banner2.jpeg"),
+              require("../../assets/banner3.jpeg"),
+            ].map((banner, index) => (
+              <Image
+                key={index}
+                source={banner}
+                resizeMode="cover"
                 style={{
-                  width: 340,
-                  height: 130,
-                  backgroundColor: banner.color,
-                  padding: 20,
-                  justifyContent: "center",
+                  width: SCREEN_WIDTH - 24,
+                  height: 210,
+                  borderRadius: 18,
                 }}
-              >
-                <Text
-                  style={{
-                    color: "rgba(255,255,255,0.8)",
-                    fontSize: 11,
-                    fontWeight: "600",
-                    letterSpacing: 1,
-                  }}
-                >
-                  {banner.title}
-                </Text>
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    marginTop: 4,
-                    lineHeight: 26,
-                  }}
-                >
-                  {banner.subtitle}
-                </Text>
-              </View>
+              />
             ))}
           </ScrollView>
+
           <View
             style={{
               position: "absolute",
-              bottom: 10,
-              left: 20,
+              bottom: 12,
+              alignSelf: "center",
               flexDirection: "row",
-              gap: 6,
             }}
           >
-            {banners.map((_, i) => (
+            {[0, 1, 2].map((i) => (
               <View
                 key={i}
                 style={{
-                  width: i === currentBanner ? 20 : 6,
-                  height: 6,
-                  borderRadius: 3,
+                  width: i === currentBanner ? 18 : 7,
+                  height: 7,
+                  borderRadius: 10,
+                  marginHorizontal: 3,
                   backgroundColor:
-                    i === currentBanner ? "#fff" : "rgba(255,255,255,0.4)",
+                    i === currentBanner ? "#ffffff" : "rgba(255,255,255,0.5)",
                 }}
               />
             ))}
@@ -801,14 +791,20 @@ export default function HomeScreen({ navigation, route }) {
               {
                 id: "offers",
                 name: "Special Offers",
-                image: require("../../assets/specialoffer.jpeg"),
+                image: require("../../assets/specialoffer.png"),
               },
             ].map((item, index) => (
               <TouchableOpacity
                 key={index}
                 activeOpacity={0.85}
                 onPress={() => {
-                  setSelectedCategory(item.id);
+                  if (item.id === "offers") {
+                    setShowOffersOnly(true);
+                    setSelectedCategory("all");
+                  } else {
+                    setShowOffersOnly(false);
+                    setSelectedCategory(item.id);
+                  }
                 }}
                 style={{
                   width: "31%",
@@ -854,6 +850,38 @@ export default function HomeScreen({ navigation, route }) {
             ))}
           </View>
         </View>
+
+        {showOffersOnly && (
+          <View
+            style={{
+              marginHorizontal: 14,
+              marginBottom: 12,
+              backgroundColor: "#fff3f5",
+              borderRadius: 12,
+              padding: 14,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: "#A50021",
+                fontWeight: "800",
+                fontSize: 20,
+              }}
+            >
+              Special Offers
+            </Text>
+
+            <Text
+              style={{
+                color: "#666",
+                marginTop: 4,
+              }}
+            >
+              Showing discounted products only
+            </Text>
+          </View>
+        )}
 
         {featuredProducts.length > 0 && (
           <View style={{ marginTop: 10, marginBottom: 22 }}>
