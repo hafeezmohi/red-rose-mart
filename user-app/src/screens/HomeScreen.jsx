@@ -380,6 +380,8 @@ export default function HomeScreen({ navigation, route }) {
         backgroundColor: "#fff",
         borderRadius: 16,
         marginRight: 12,
+        marginBottom: 1,
+
         paddingBottom: 14,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -434,16 +436,7 @@ export default function HomeScreen({ navigation, route }) {
         >
           {product.name}
         </Text>
-        <View style={{ flexDirection: "row", marginTop: 4 }}>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Ionicons
-              key={i}
-              name={i <= Math.round(product.rating) ? "star" : "star-outline"}
-              size={10}
-              color={i <= Math.round(product.rating) ? "#f5a623" : "#ddd"}
-            />
-          ))}
-        </View>
+
         <TouchableOpacity
           onPress={() => addToCart(product)}
           style={{
@@ -884,7 +877,15 @@ export default function HomeScreen({ navigation, route }) {
         )}
 
         {featuredProducts.length > 0 && (
-          <View style={{ marginTop: 10, marginBottom: 22 }}>
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderColor: "#ddd",
+              marginTop: 10,
+              marginBottom: 22,
+              paddingTop: 22,
+            }}
+          >
             <View
               style={{
                 alignItems: "center",
@@ -923,7 +924,17 @@ export default function HomeScreen({ navigation, route }) {
         )}
 
         {bestSellerProducts.length > 0 && (
-          <View style={{ marginTop: 10, marginBottom: 22 }}>
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+              borderColor: "#ddd",
+              marginTop: 10,
+              marginBottom: 22,
+              paddingTop: 22,
+              paddingBottom: 22,
+            }}
+          >
             <View
               style={{
                 alignItems: "center",

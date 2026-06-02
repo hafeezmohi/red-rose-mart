@@ -136,7 +136,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
           style={{ marginRight: 14 }}
         >
-          <Text style={{ fontSize: 24, color: "#A50021" }}>‹</Text>
+          <Text style={{ fontSize: 50, color: "#A50021" }}>‹</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1a1a1a" }}>

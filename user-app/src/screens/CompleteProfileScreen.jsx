@@ -23,6 +23,7 @@ export default function CompleteProfileScreen({ navigation }) {
   const [coordinates, setCoordinates] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [locationVerified, setLocationVerified] = useState(false);
 
   const isKagaznagarAddress = (text = "") => {
     const value = text.toLowerCase();
@@ -32,7 +33,9 @@ export default function CompleteProfileScreen({ navigation }) {
       value.includes("kaghaznagar") ||
       value.includes("asifabad") ||
       value.includes("komaram bheem") ||
-      value.includes("adilabad")
+      value.includes("adilabad") ||
+      // TEMPORARY: Purna support (remove later)
+      value.includes("purna")
     );
   };
 
@@ -83,12 +86,17 @@ export default function CompleteProfileScreen({ navigation }) {
         const isKagaznagar =
           city.includes("kagaznagar") ||
           district.includes("kagaznagar") ||
-          formattedLower.includes("kagaznagar");
+          formattedLower.includes("kagaznagar") ||
+          // TEMPORARY: Purna support (remove later)
+          city.includes("purna") ||
+          district.includes("purna") ||
+          formattedLower.includes("purna");
 
         if (!isKagaznagar) {
           setAddress("");
           setCoordinates(null);
 
+          setLocationVerified(false);
           Alert.alert(
             "Not Deliverable",
             "Sorry, we deliver only in Kagaznagar, Telangana.",
@@ -97,10 +105,10 @@ export default function CompleteProfileScreen({ navigation }) {
         }
 
         setAddress(formatted);
-        Alert.alert(
-          "Location Found",
-          "Your location is within our delivery area.",
-        );
+        setLocationVerified(true);
+
+        // Location verified successfully
+        // No popup needed
       } else {
         Alert.alert(
           "Not Deliverable",
@@ -108,6 +116,7 @@ export default function CompleteProfileScreen({ navigation }) {
         );
       }
     } catch (error) {
+      setLocationVerified(false);
       Alert.alert("Error", "Failed to get location. Please enter manually.");
       console.error(error);
     } finally {
@@ -299,11 +308,11 @@ export default function CompleteProfileScreen({ navigation }) {
           {/* Auto detect button */}
           <TouchableOpacity
             onPress={detectLocation}
-            disabled={locationLoading}
+            disabled={locationLoading || locationVerified}
             style={{
-              backgroundColor: "#fff5f5",
+              backgroundColor: locationVerified ? "#E8F5E9" : "#fff5f5",
+              borderColor: locationVerified ? "#2E7D32" : "#A50021",
               borderWidth: 1,
-              borderColor: "#A50021",
               borderRadius: 14,
               height: 50,
               flexDirection: "row",
@@ -318,12 +327,14 @@ export default function CompleteProfileScreen({ navigation }) {
             ) : (
               <Text
                 style={{
-                  color: "#A50021",
+                  color: locationVerified ? "#2E7D32" : "#A50021",
                   fontWeight: "bold",
                   fontSize: 15,
                 }}
               >
-                Use Current Location
+                {locationVerified
+                  ? "✓ Location Verified"
+                  : "Use Current Location"}
               </Text>
             )}
           </TouchableOpacity>
@@ -331,9 +342,10 @@ export default function CompleteProfileScreen({ navigation }) {
           {/* Continue button */}
           <TouchableOpacity
             onPress={handleContinue}
-            disabled={loading}
+            disabled={loading || !locationVerified || !phone.trim()}
             style={{
-              backgroundColor: "#A50021",
+              backgroundColor:
+                loading || !locationVerified || !phone.trim() ? "#C8C8C8" : "#A50021",
               height: 62,
               borderRadius: 18,
               justifyContent: "center",
