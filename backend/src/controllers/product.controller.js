@@ -78,6 +78,10 @@ export const getCategories = async (req, res) => {
     { id: "household", label: "Household" },
     { id: "frozen", label: "Frozen" },
     { id: "other", label: "Other" },
+    { id: "instant-foods", label: "Instant Foods" },
+    { id: "oil-masala", label: "Oil & Masala" },
+    { id: "beauty-hygiene", label: "Beauty & Hygiene" },
+    { id: "offers", label: "Special Offers" },
   ];
   sendSuccess(res, 200, "Categories fetched", { categories });
 };
@@ -99,11 +103,10 @@ export const createProduct = async (req, res, next) => {
 // @access  Admin
 export const updateProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     if (!product) return sendError(res, 404, "Product not found");
     sendSuccess(res, 200, "Product updated", { product });
   } catch (err) {
@@ -119,7 +122,7 @@ export const deleteProduct = async (req, res, next) => {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       { isActive: false },
-      { new: true }
+      { new: true },
     );
     if (!product) return sendError(res, 404, "Product not found");
     sendSuccess(res, 200, "Product deleted");

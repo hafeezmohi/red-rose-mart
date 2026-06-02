@@ -4,7 +4,7 @@ const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     description: { type: String },
-    images: [{ type: String }],                
+    images: [{ type: String }],
 
     category: {
       type: String,
@@ -20,25 +20,29 @@ const productSchema = new mongoose.Schema(
         "household",
         "frozen",
         "other",
+        "instant-foods",
+        "oil-masala",
+        "beauty-hygiene",
+        "offers",
       ],
     },
 
     price: { type: Number, required: true },
-    discountPrice: { type: Number },           // sale price if any
+    discountPrice: { type: Number }, // sale price if any
 
-    unit: { type: String, required: true },    // "kg", "500g", "1L", "piece" etc
+    unit: { type: String, required: true }, // "kg", "500g", "1L", "piece" etc
     stock: { type: Number, required: true, default: 0 },
     lowStockThreshold: { type: Number, default: 10 }, // warn when stock < this
 
-    isFeatured: { type: Boolean, default: false },  // for homepage banners
-    isActive: { type: Boolean, default: true },     // soft delete
+    isFeatured: { type: Boolean, default: false }, // for homepage banners
+    isActive: { type: Boolean, default: true }, // soft delete
 
     ratings: {
       average: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // virtual — is stock low?

@@ -23,6 +23,10 @@ const CATEGORIES = [
     { id: "household",         label: "Household" },
     { id: "frozen",            label: "Frozen" },
     { id: "other",             label: "Other" },
+    { id: "instant-foods", label: "Instant Foods" },
+    { id: "oil-masala", label: "Oil & Masala" },
+    { id: "beauty-hygiene", label: "Beauty & Hygiene" },
+    { id: "offers", label: "Special Offers" },
 ];
 
 const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.label]));

@@ -10,21 +10,43 @@ export default function SplashScreen({ navigation }) {
   const checkLogin = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const userStr = await AsyncStorage.getItem("user");
-      const user = userStr ? JSON.parse(userStr) : null;
+      console.log("Token:", token);
+
+      if (!token) {
+        navigation.replace("Welcome");
+        return;
+      }
+
+      console.log("API:", process.env.EXPO_PUBLIC_API_URL);
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await res.json();
+      console.log("ME RESPONSE:", JSON.stringify(data, null, 2));
+
+      if (!data.success) {
+        await AsyncStorage.multiRemove(["token", "user"]);
+        navigation.replace("Welcome");
+        return;
+      }
+
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
       setTimeout(() => {
-        if (token && user) {
-          if (user.isProfileComplete) {
-            navigation.replace("Home");
-          } else {
-            navigation.replace("CompleteProfile");
-          }
+        if (data.user.isProfileComplete) {
+          navigation.replace("Home");
         } else {
-          navigation.replace("Welcome");
+          navigation.replace("CompleteProfile");
         }
       }, 2500);
     } catch (error) {
+      console.log("Splash error:", error);
       navigation.replace("Welcome");
     }
   };

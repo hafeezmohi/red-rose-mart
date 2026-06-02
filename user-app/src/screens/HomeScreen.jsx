@@ -60,6 +60,26 @@ const categories = [
   { id: "household", name: "Household", icon: "home-outline" },
   { id: "frozen", name: "Frozen", icon: "snow-outline" },
   { id: "other", name: "Other", icon: "cube-outline" },
+  {
+    id: "instant-foods",
+    name: "Instant Foods",
+    icon: "fast-food-outline",
+  },
+  {
+    id: "oil-masala",
+    name: "Oil & Masala",
+    icon: "restaurant-outline",
+  },
+  {
+    id: "beauty-hygiene",
+    name: "Beauty & Hygiene",
+    icon: "sparkles-outline",
+  },
+  {
+    id: "offers",
+    name: "Special Offers",
+    icon: "pricetag-outline",
+  },
 ];
 
 const SORT_OPTIONS = [
@@ -101,6 +121,30 @@ const CATEGORY_GRID = [
   { id: "household", name: "Household", iconLib: "ion", icon: "home-outline" },
   { id: "frozen", name: "Frozen", iconLib: "ion", icon: "snow-outline" },
   { id: "other", name: "Other", iconLib: "ion", icon: "cube-outline" },
+  {
+    id: "instant-foods",
+    name: "Instant Foods",
+    iconLib: "ion",
+    icon: "fast-food-outline",
+  },
+  {
+    id: "oil-masala",
+    name: "Oil & Masala",
+    iconLib: "ion",
+    icon: "restaurant-outline",
+  },
+  {
+    id: "beauty-hygiene",
+    name: "Beauty & Hygiene",
+    iconLib: "ion",
+    icon: "sparkles-outline",
+  },
+  {
+    id: "offers",
+    name: "Special Offers",
+    iconLib: "ion",
+    icon: "pricetag-outline",
+  },
 ];
 
 const CategoryIcon = ({ item, size = 28, color = "#A50021" }) => {
@@ -114,7 +158,8 @@ const CategoryIcon = ({ item, size = 28, color = "#A50021" }) => {
 
 export default function HomeScreen({ navigation, route }) {
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [showCartBar, setShowCartBar] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
@@ -155,9 +200,8 @@ export default function HomeScreen({ navigation, route }) {
         const limit = searchTerm ? 500 : PAGE_SIZE;
         let url = `${API_URL}/api/products?limit=${limit}&page=${pageNum}`;
 
-        if (category !== "All") {
-          const cat = categories.find((c) => c.name === category);
-          if (cat && cat.id !== "all") url += `&category=${cat.id}`;
+        if (category !== "all") {
+          url += `&category=${category}`;
         }
 
         if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -267,7 +311,10 @@ export default function HomeScreen({ navigation, route }) {
       .toLowerCase()
       .includes(search.toLowerCase());
     const matchesCategory =
-      selectedCategory === "All" ? true : product.category === selectedCategory;
+      selectedCategory === "all"
+        ? true
+        : categories.find((c) => c.id === selectedCategory)?.name ===
+          product.category;
     const matchesMin =
       appliedMin !== "" ? product.price >= Number(appliedMin) : true;
     const matchesMax =
@@ -325,12 +372,12 @@ export default function HomeScreen({ navigation, route }) {
       style={{
         width,
         backgroundColor: "#fff",
-        borderRadius: 10,
+        borderRadius: 16,
         marginRight: 12,
-        paddingBottom: 10,
+        paddingBottom: 14,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
+        shadowOpacity: 0.08,
         shadowRadius: 4,
         elevation: 2,
         overflow: "hidden",
@@ -339,7 +386,7 @@ export default function HomeScreen({ navigation, route }) {
       <View style={{ position: "relative" }}>
         <Image
           source={{ uri: product.image }}
-          style={{ width: "100%", height: 120, backgroundColor: "#f9f9f9" }}
+          style={{ width: "100%", height: 130, backgroundColor: "#f9f9f9" }}
           resizeMode="contain"
         />
         {product.discount && (
@@ -394,9 +441,10 @@ export default function HomeScreen({ navigation, route }) {
         <TouchableOpacity
           onPress={() => addToCart(product)}
           style={{
-            backgroundColor: "#f0c000",
+            backgroundColor: "#f4c400",
             marginTop: 8,
-            borderRadius: 6,
+            borderRadius: 20,
+            marginHorizontal: 6,
             paddingVertical: 7,
             alignItems: "center",
           }}
@@ -668,18 +716,40 @@ export default function HomeScreen({ navigation, route }) {
           </View>
         </View>
 
-        <View style={{ marginHorizontal: 14, marginBottom: 14 }}>
-          <Text
+        <View
+          style={{
+            marginHorizontal: 12,
+            marginTop: 4,
+            marginBottom: 18,
+          }}
+        >
+          <View
             style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: "#1a1a1a",
-              marginBottom: 14,
-              textAlign: "center",
+              alignItems: "center",
+              marginBottom: 18,
             }}
           >
-            Shop By Categories
-          </Text>
+            <View
+              style={{
+                backgroundColor: "rgba(165,0,33,0.08)",
+                paddingHorizontal: 22,
+                paddingVertical: 8,
+                borderRadius: 20,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "800",
+                  color: "#A50021",
+                  letterSpacing: 0.4,
+                }}
+              >
+                Shop By Categories
+              </Text>
+            </View>
+          </View>
+
           <View
             style={{
               flexDirection: "row",
@@ -687,35 +757,98 @@ export default function HomeScreen({ navigation, route }) {
               justifyContent: "space-between",
             }}
           >
-            {CATEGORY_GRID.map((cat, idx) => (
+            {[
+              {
+                id: "rice-grains",
+                name: "Food Grains",
+                image: require("../../assets/foodgrains.webp"),
+              },
+              {
+                id: "instant-foods",
+                name: "Instant Foods",
+                image: require("../../assets/instantfoods.jpeg"),
+              },
+              {
+                id: "snacks",
+                name: "Snacks",
+                image: require("../../assets/snacks.jpeg"),
+              },
+              {
+                id: "oil-masala",
+                name: "Oil & Masala",
+                image: require("../../assets/oilmasala.jpeg"),
+              },
+              {
+                id: "personal-care",
+                name: "Personal Care",
+                image: require("../../assets/personalcare.jpeg"),
+              },
+              {
+                id: "beverages",
+                name: "Beverages",
+                image: require("../../assets/beverages.jpeg"),
+              },
+              {
+                id: "beauty-hygiene",
+                name: "Beauty & Hygiene",
+                image: require("../../assets/beautyhygiene.jpeg"),
+              },
+              {
+                id: "other",
+                name: "Other Products",
+                image: require("../../assets/otherproducts.jpeg"),
+              },
+              {
+                id: "offers",
+                name: "Special Offers",
+                image: require("../../assets/specialoffer.jpeg"),
+              },
+            ].map((item, index) => (
               <TouchableOpacity
-                key={idx}
-                onPress={() => setSelectedCategory(cat.name)}
+                key={index}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSelectedCategory(item.id);
+                }}
                 style={{
                   width: "31%",
                   backgroundColor: "#fff",
-                  borderRadius: 10,
-                  padding: 12,
-                  marginBottom: 12,
+                  borderRadius: 16,
+                  marginBottom: 14,
                   alignItems: "center",
+                  paddingVertical: 14,
+
                   shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 3,
-                  elevation: 1,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 6,
+
+                  elevation: 3,
                 }}
               >
-                <CategoryIcon item={cat} size={28} color="#A50021" />
+                <Image
+                  source={item.image}
+                  resizeMode="contain"
+                  style={{
+                    width: 52,
+                    height: 52,
+                    marginBottom: 10,
+                  }}
+                />
+
                 <Text
                   style={{
-                    fontSize: 11,
-                    color: "#444",
+                    fontSize: 12,
+                    fontWeight: "600",
+                    color: "#333",
                     textAlign: "center",
-                    fontWeight: "500",
-                    marginTop: 6,
+                    paddingHorizontal: 4,
                   }}
                 >
-                  {cat.name}
+                  {item.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -726,18 +859,28 @@ export default function HomeScreen({ navigation, route }) {
           <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
                 alignItems: "center",
-                paddingHorizontal: 14,
-                marginBottom: 12,
+                marginBottom: 16,
               }}
             >
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#1a1a1a" }}
+              <View
+                style={{
+                  backgroundColor: "rgba(165,0,33,0.08)",
+                  paddingHorizontal: 20,
+                  paddingVertical: 7,
+                  borderRadius: 18,
+                }}
               >
-                Featured Products
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: "#A50021",
+                  }}
+                >
+                  Featured Products
+                </Text>
+              </View>
             </View>
             <ScrollView
               horizontal
@@ -755,18 +898,28 @@ export default function HomeScreen({ navigation, route }) {
           <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
                 alignItems: "center",
-                paddingHorizontal: 14,
-                marginBottom: 12,
+                marginBottom: 16,
               }}
             >
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#1a1a1a" }}
+              <View
+                style={{
+                  backgroundColor: "rgba(165,0,33,0.08)",
+                  paddingHorizontal: 20,
+                  paddingVertical: 7,
+                  borderRadius: 18,
+                }}
               >
-                Best Seller Products
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: "#A50021",
+                  }}
+                >
+                  Best Seller Products
+                </Text>
+              </View>
             </View>
             <ScrollView
               horizontal
@@ -784,18 +937,28 @@ export default function HomeScreen({ navigation, route }) {
           <View style={{ marginTop: 10, marginBottom: 22 }}>
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
                 alignItems: "center",
-                paddingHorizontal: 14,
-                marginBottom: 12,
+                marginBottom: 16,
               }}
             >
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#1a1a1a" }}
+              <View
+                style={{
+                  backgroundColor: "rgba(165,0,33,0.08)",
+                  paddingHorizontal: 20,
+                  paddingVertical: 7,
+                  borderRadius: 18,
+                }}
               >
-                On Sale Products
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: "#A50021",
+                  }}
+                >
+                  On Sale Products
+                </Text>
+              </View>
             </View>
             <ScrollView
               horizontal
@@ -835,33 +998,6 @@ export default function HomeScreen({ navigation, route }) {
               Try a different search or adjust your filters
             </Text>
           </View>
-        )}
-
-        {hasMore && !search && filteredProducts.length > 0 && (
-          <TouchableOpacity
-            onPress={handleLoadMore}
-            disabled={loadingMore}
-            style={{
-              borderWidth: 2,
-              borderColor: "#A50021",
-              borderRadius: 8,
-              height: 48,
-              marginHorizontal: 14,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 12,
-            }}
-          >
-            {loadingMore ? (
-              <ActivityIndicator color="#A50021" />
-            ) : (
-              <Text
-                style={{ color: "#A50021", fontWeight: "700", fontSize: 14 }}
-              >
-                See More Products
-              </Text>
-            )}
-          </TouchableOpacity>
         )}
       </ScrollView>
 
