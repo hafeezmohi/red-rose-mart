@@ -12,7 +12,7 @@ const STATUS_CONFIG = {
   cancelled:        { label: 'Cancelled', color: '#ef4444', bg: '#fef2f2' },
 };
 
-export default function OrdersScreen({ navigation }) {
+export default function OrdersScreen({ navigation, route }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -125,7 +125,10 @@ export default function OrdersScreen({ navigation }) {
         })}
       </ScrollView>
 
-      <BottomNav navigation={navigation} />
+      <BottomNav
+  navigation={navigation}
+  route={route}
+/>
     </View>
   );
 }

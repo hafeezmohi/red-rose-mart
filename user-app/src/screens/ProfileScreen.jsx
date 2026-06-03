@@ -32,7 +32,7 @@ const MenuItem = ({ label, onPress, isLast }) => (
   </TouchableOpacity>
 );
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ navigation, route }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -220,7 +220,10 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
       </ScrollView>
 
-      <BottomNav navigation={navigation} />
+      <BottomNav
+  navigation={navigation}
+  route={route}
+/>
     </View>
   );
 }
