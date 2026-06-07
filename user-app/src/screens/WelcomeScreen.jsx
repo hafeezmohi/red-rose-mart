@@ -26,7 +26,6 @@ export default function WelcomeScreen({ navigation }) {
 
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log("Google userInfo:", JSON.stringify(userInfo));
 
       const idToken = userInfo.data?.idToken || userInfo.idToken;
 
@@ -35,18 +34,13 @@ export default function WelcomeScreen({ navigation }) {
         return;
       }
 
-      console.log("idToken:", idToken);
-
       const res = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
 
-      console.log("Response status:", res.status);
-
       const text = await res.text();
-      console.log("Raw response:", text);
 
       const data = JSON.parse(text);
 

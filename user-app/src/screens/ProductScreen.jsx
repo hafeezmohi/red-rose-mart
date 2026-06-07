@@ -58,7 +58,7 @@ export default function ProductScreen({ route, navigation }) {
           setUser(JSON.parse(userStr));
         }
       } catch (e) {
-        console.log(e);
+        // Error loading user
       }
     };
 

@@ -176,7 +176,6 @@ export default function CompleteProfileScreen({ navigation }) {
 
       navigation.replace("Home");
     } catch (error) {
-      console.log(error);
       Alert.alert("Error", "Failed to complete profile");
     } finally {
       setLoading(false);

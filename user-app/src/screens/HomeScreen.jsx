@@ -169,7 +169,7 @@ export default function HomeScreen({ navigation, route }) {
         const userStr = await AsyncStorage.getItem("user");
         if (userStr) setUser(JSON.parse(userStr));
       } catch (e) {
-        console.log(e);
+        // Error loading user
       }
     };
     loadUser();

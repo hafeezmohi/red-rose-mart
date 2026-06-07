@@ -46,7 +46,7 @@ export default function ProfileScreen({ navigation, route }) {
       const userStr = await AsyncStorage.getItem('user');
       if (userStr) setUser(JSON.parse(userStr));
     } catch (error) {
-      console.log(error);
+      // Error loading user
     }
   };
 

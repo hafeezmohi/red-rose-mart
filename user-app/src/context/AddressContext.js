@@ -36,7 +36,7 @@ export const AddressProvider = ({
                     );
                 }
             } catch (error) {
-                console.log(error);
+                // Error
             }
         };
 
@@ -54,7 +54,7 @@ export const AddressProvider = ({
                     )
                 );
             } catch (error) {
-                console.log(error);
+                // Error
             }
         };
 

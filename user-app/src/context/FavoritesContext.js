@@ -39,7 +39,7 @@ export const FavoritesProvider = ({
                     );
                 }
             } catch (error) {
-                console.log(error);
+                // Error loading favorites
             }
         };
 
@@ -53,7 +53,7 @@ export const FavoritesProvider = ({
                     )
                 );
             } catch (error) {
-                console.log(error);
+                // Error saving favorites
             }
         };
 

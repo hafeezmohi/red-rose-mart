@@ -10,14 +10,12 @@ export default function SplashScreen({ navigation }) {
   const checkLogin = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log("Token:", token);
 
       if (!token) {
         navigation.replace("Welcome");
         return;
       }
 
-      console.log("API:", process.env.EXPO_PUBLIC_API_URL);
       const res = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/auth/me`,
         {
@@ -28,7 +26,6 @@ export default function SplashScreen({ navigation }) {
       );
 
       const data = await res.json();
-      console.log("ME RESPONSE:", JSON.stringify(data, null, 2));
 
       if (!data.success) {
         await AsyncStorage.multiRemove(["token", "user"]);
@@ -46,7 +43,6 @@ export default function SplashScreen({ navigation }) {
         }
       }, 2500);
     } catch (error) {
-      console.log("Splash error:", error);
       navigation.replace("Welcome");
     }
   };
