@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Privacy Policy – Red Rose Online Grocery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #A50021;
+      --dark-red: #7a0018;
+      --gold: #c9a84c;
+      --bg: #fdf9f9;
+      --text: #1a1a1a;
+      --muted: #666;
+      --border: #f0dede;
+      --card: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+      font-size: 16px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--dark-red) 0%, var(--red) 60%, #c0002a 100%);
+      color: white;
+      padding: 48px 24px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '🌹';
+      font-size: 80px;
+      opacity: 0.08;
+      position: absolute;
+      top: -10px;
+      right: 40px;
+    }
+
+    header::after {
+      content: '🌹';
+      font-size: 60px;
+      opacity: 0.06;
+      position: absolute;
+      bottom: -10px;
+      left: 30px;
+    }
+
+    .logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .logo-name span {
+      color: var(--gold);
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 700;
+      margin: 12px 0 8px;
+    }
+
+    .last-updated {
+        color: rgb(0, 0, 0);
+      font-size: 13px;
+      opacity: 0.75;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Main Layout */
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Intro card */
+    .intro-card {
+      background: var(--card);
+      border-left: 4px solid var(--red);
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 12px rgba(165,0,33,0.07);
+    }
+
+    .intro-card p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 44px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: var(--red);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--dark-red);
+      margin: 24px 0 10px;
+    }
+
+    h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 18px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: #333;
+    }
+
+    ul {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+
+    ul li {
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    ul li strong {
+      color: var(--dark-red);
+    }
+
+    /* Highlight boxes */
+    .highlight-box {
+      background: #fff5f5;
+      border: 1px solid #f5c0c0;
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 16px 0;
+    }
+
+    .highlight-box.green {
+      background: #f5fff7;
+      border-color: #b0e0bb;
+    }
+
+    .highlight-box.gold {
+      background: #fffbf0;
+      border-color: #e8d5a0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      font-size: 14.5px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--red);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .badge.green { background: #2e7d52; }
+    .badge.gold { background: #9a7a1a; }
+
+    /* Definitions table */
+    .def-list {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .def-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+    }
+
+    .def-item:last-child { border-bottom: none; }
+
+    .def-term {
+      font-weight: 700;
+      color: var(--dark-red);
+      min-width: 130px;
+      font-size: 14px;
+    }
+
+    .def-desc {
+      color: #444;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Contact section */
+    .contact-card {
+      background: linear-gradient(135deg, #fff5f5, #fff);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .contact-card .icon { font-size: 36px; margin-bottom: 12px; }
+
+    .contact-phone {
+      display: inline-block;
+      background: var(--red);
+      color: white;
+      padding: 10px 28px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-top: 10px;
+      text-decoration: none;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-red);
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+
+    footer strong { color: white; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 26px; }
+      .def-item { flex-direction: column; gap: 4px; }
+      .def-term { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-name">Red Rose <span>Mart</span></div>
+  <h1>Privacy Policy</h1>
+  <p class="last-updated">Last Updated: June 07, 2026</p>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <p>
+      This Privacy Policy describes Our policies and procedures on the collection, use, and disclosure
+      of Your information when You use the Red Rose Online Grocery application. It also tells You about
+      Your privacy rights and how the law protects You. By using the Service, You agree to the collection
+      and use of information in accordance with this Privacy Policy.
+    </p>
+  </div>
+
+  <!-- 1. Definitions -->
+  <section>
+    <h2>1. Interpretation &amp; Definitions</h2>
+    <h3>Interpretation</h3>
+    <p>
+      Words whose initial letters are capitalized have meanings defined below. These definitions apply
+      whether the terms appear in singular or plural form.
+    </p>
+    <h3>Definitions</h3>
+    <div class="def-list">
+      <div class="def-item">
+        <div class="def-term">Account</div>
+        <div class="def-desc">A unique account created for You to access our Service or parts of our Service.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Application</div>
+        <div class="def-desc">Red Rose Online Grocery — the mobile software program provided by the Company.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Company</div>
+        <div class="def-desc">Red Rose Mart, Kagaznagar, Telangana, India. ("We", "Us", "Our")</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Country</div>
+        <div class="def-desc">Telangana, India</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Device</div>
+        <div class="def-desc">Any device that can access the Service — computer, mobile phone, or tablet.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Personal Data</div>
+        <div class="def-desc">Any information that relates to an identified or identifiable individual.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Service</div>
+        <div class="def-desc">Refers to the Red Rose Online Grocery Application.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">Usage Data</div>
+        <div class="def-desc">Data collected automatically, generated by use of the Service or from the Service infrastructure itself.</div>
+      </div>
+      <div class="def-item">
+        <div class="def-term">You</div>
+        <div class="def-desc">The individual accessing or using the Service.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Data Collected -->
+  <section>
+    <h2>2. Data We Collect</h2>
+
+    <h3>Personal Data</h3>
+    <p>While using Our Service, We may ask You to provide personally identifiable information, including:</p>
+    <ul>
+      <li>Email address</li>
+      <li>First name and last name</li>
+      <li>Phone number</li>
+      <li>Delivery address, city, state, ZIP / postal code</li>
+      <li>Profile photo (via Google account)</li>
+    </ul>
+
+    <h3>Usage Data</h3>
+    <p>
+      Usage Data is collected automatically when using the Service and may include Your device's IP address,
+      device type, unique device ID, mobile operating system, pages visited, time and date of visit, and
+      other diagnostic data.
+    </p>
+
+    <h3>Location Data</h3>
+    <p>
+      With Your prior permission, We collect location information to determine your delivery area and
+      provide location-based features. You can enable or disable location access at any time through
+      Your device settings.
+    </p>
+  </section>
+
+  <!-- 3. Google Sign-In -->
+  <section>
+    <h2>3. Google Sign-In</h2>
+    <div class="highlight-box gold">
+      <div class="badge gold">Third-Party Authentication</div>
+      <p>
+        Red Rose Online Grocery uses <strong>Google Sign-In</strong> for user authentication.
+        When You sign in with Google, We receive Your name, email address, and profile photo
+        from Google. We do not receive or store Your Google password.
+      </p>
+    </div>
+    <p style="margin-top:14px;">
+      Your use of Google Sign-In is also governed by
+      <a href="https://policies.google.com/privacy" style="color:var(--red);">Google's Privacy Policy</a>.
+      We only request the minimum necessary permissions to create and manage your account.
+    </p>
+  </section>
+
+  <!-- 4. Push Notifications -->
+  <section>
+    <h2>4. Push Notifications</h2>
+    <div class="highlight-box">
+      <div class="badge">Notifications</div>
+      <p>
+        We use <strong>Expo Notifications</strong> to send push notifications to Your device regarding
+        order confirmations, delivery updates, and promotional offers.
+      </p>
+    </div>
+    <p style="margin-top:14px;">
+      To send notifications, We collect and store Your device's <strong>push token</strong> (a unique
+      identifier assigned to your device). This token is stored on our servers and used solely for
+      sending You relevant notifications.
+    </p>
+    <p>
+      You can disable push notifications at any time through Your device's notification settings.
+      Disabling notifications will not affect Your ability to use the app.
+    </p>
+  </section>
+
+  <!-- 5. Payment -->
+  <section>
+    <h2>5. Payment Information</h2>
+    <div class="highlight-box green">
+      <div class="badge green">✓ No Payment Data Collected</div>
+      <p>
+        <strong>Red Rose Mart operates exclusively on a Cash on Delivery (COD) basis.</strong>
+        We do not collect, store, process, or transmit any payment, credit card, debit card,
+        or banking information whatsoever. No financial data is required to place an order.
+      </p>
+    </div>
+    <p style="margin-top:14px;">
+      Payment is made entirely in cash at the time of delivery. This means Your financial
+      information is never at risk through our platform.
+    </p>
+  </section>
+
+  <!-- 6. How We Use Data -->
+  <section>
+    <h2>6. How We Use Your Data</h2>
+    <p>The Company may use Personal Data for the following purposes:</p>
+    <ul>
+      <li><strong>To provide and maintain the Service</strong>, including monitoring usage.</li>
+      <li><strong>To manage Your Account</strong> and registration as a user of the Service.</li>
+      <li><strong>To process and deliver orders</strong> placed through the Application.</li>
+      <li><strong>To contact You</strong> via push notifications, SMS, or email regarding order updates and offers.</li>
+      <li><strong>To determine delivery area</strong> using Your location data.</li>
+      <li><strong>To manage Your requests</strong> and customer support queries.</li>
+      <li><strong>To improve the Service</strong> through usage analysis and trend identification.</li>
+      <li><strong>For business operations</strong> such as analytics and promotional campaigns.</li>
+    </ul>
+  </section>
+
+  <!-- 7. Data Sharing -->
+  <section>
+    <h2>7. Sharing Your Data</h2>
+    <p>We may share Your Personal Data in the following situations:</p>
+    <ul>
+      <li><strong>With Service Providers:</strong> Third-party companies who help us operate our Service (e.g., Firebase/Google for authentication and notifications).</li>
+      <li><strong>For Legal Requirements:</strong> If required by law or valid public authority requests.</li>
+      <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of Company assets.</li>
+      <li><strong>With Your Consent:</strong> For any other purpose with Your explicit consent.</li>
+    </ul>
+    <p>
+      We <strong>do not sell</strong> Your Personal Data to third parties.
+    </p>
+  </section>
+
+  <!-- 8. Data Retention -->
+  <section>
+    <h2>8. Data Retention</h2>
+    <p>
+      We retain Your Personal Data only as long as necessary for the purposes set out in this
+      Privacy Policy and to comply with legal obligations.
+    </p>
+    <ul>
+      <li><strong>Account Information:</strong> Retained for the duration of your account plus up to 24 months after closure.</li>
+      <li><strong>Order History:</strong> Retained for up to 24 months for dispute resolution and service quality.</li>
+      <li><strong>Usage Data:</strong> Retained for up to 24 months for analytics and security monitoring.</li>
+      <li><strong>Push Tokens:</strong> Retained while your account is active; deleted upon account deletion.</li>
+    </ul>
+    <p>
+      When retention periods expire, We securely delete or anonymize Your Personal Data.
+    </p>
+  </section>
+
+  <!-- 9. Data Transfer -->
+  <section>
+    <h2>9. Transfer of Your Data</h2>
+    <p>
+      Your information may be transferred to and maintained on computers located outside of Your
+      state or country where data protection laws may differ. Our backend servers and Firebase
+      infrastructure may process data in locations outside India.
+    </p>
+    <p>
+      We take all steps reasonably necessary to ensure Your data is treated securely and in
+      accordance with this Privacy Policy.
+    </p>
+  </section>
+
+  <!-- 10. Delete Your Data -->
+  <section>
+    <h2>10. Delete Your Personal Data</h2>
+    <p>
+      You have the right to request deletion of Your Personal Data. You can:
+    </p>
+    <ul>
+      <li>Delete Your account from within the App (Profile → Delete Account)</li>
+      <li>Contact Us directly at the number below to request data deletion</li>
+    </ul>
+    <p>
+      Please note that We may need to retain certain information when required by law or for
+      legitimate business purposes.
+    </p>
+  </section>
+
+  <!-- 11. Security -->
+  <section>
+    <h2>11. Security of Your Data</h2>
+    <p>
+      The security of Your Personal Data is important to Us. We use commercially reasonable means
+      to protect Your data, including secure HTTPS transmission and Firebase's security
+      infrastructure. However, no method of transmission over the Internet or electronic storage
+      is 100% secure, and We cannot guarantee absolute security.
+    </p>
+  </section>
+
+  <!-- 12. Children's Privacy -->
+  <section>
+    <h2>12. Children's Privacy</h2>
+    <p>
+      Our Service does not address anyone under the age of <strong>16</strong>. We do not knowingly
+      collect personally identifiable information from anyone under 16. If You are a parent or
+      guardian and believe Your child has provided Us with Personal Data, please contact Us
+      immediately and We will take steps to remove that information from Our servers.
+    </p>
+  </section>
+
+  <!-- 13. Third-Party Links -->
+  <section>
+    <h2>13. Links to Other Websites</h2>
+    <p>
+      Our Service may contain links to third-party websites (e.g., WhatsApp for customer support).
+      We have no control over and assume no responsibility for the content or privacy practices
+      of any third-party sites. We strongly advise You to review the Privacy Policy of every
+      site You visit.
+    </p>
+  </section>
+
+  <!-- 14. Changes -->
+  <section>
+    <h2>14. Changes to This Privacy Policy</h2>
+    <p>
+      We may update Our Privacy Policy from time to time. We will notify You of any significant
+      changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
+    </p>
+    <p>
+      You are advised to review this Privacy Policy periodically. Changes are effective when
+      posted on this page.
+    </p>
+  </section>
+
+  <!-- 15. Contact -->
+  <section>
+    <h2>15. Contact Us</h2>
+    <div class="contact-card">
+      <div class="icon">📞</div>
+      <p style="color:var(--muted); margin-bottom:4px;">
+        If you have any questions about this Privacy Policy, contact us:
+      </p>
+      <p style="font-weight:700; font-size:17px; color:var(--dark-red);">Red Rose Mart</p>
+      <p style="color:var(--muted); font-size:14px;">Kagaznagar, Telangana, India</p>
+      <a class="contact-phone" href="tel:+918074559488">+91 80745 59488</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>Red Rose Mart</strong> · Kagaznagar, Telangana, India · All rights reserved.</p>
+  <p style="margin-top:6px; font-size:12px;">Red Rose Online Grocery · Privacy Policy · Last updated June 07, 2026</p>
+</footer>
+
+</body>
+</html>
