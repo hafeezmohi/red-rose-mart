@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "184521565363-6k00b8fhullrkiva2gnoqi5q4unl1v6c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.muzzu8421.redrosemartapp",
+            "certificate_hash": "761f964d8f8ca3c85c7562ea29043ab18c98a396"
+          }
+        },
+        {
           "client_id": "184521565363-djapqg9i0236ifkpp7t38el2ubflq1n7.apps.googleusercontent.com",
           "client_type": 3
         }
