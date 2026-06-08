@@ -86,7 +86,7 @@ export default function WelcomeScreen({ navigation }) {
     >
       <View style={{ alignItems: "center", marginTop: 10 }}>
         <Image
-          source={require("../../assets/logo.png")}
+          source={require("../../assets/icon.png")}
           style={{ width: 120, height: 120, borderRadius: 60 }}
         />
         <Text

@@ -59,7 +59,7 @@ export default function SplashScreen({ navigation }) {
       }}
     >
       <Image
-        source={require("../../assets/logo.png")}
+        source={require("../../assets/icon.png")}
         style={{ width: 120, height: 120, borderRadius: 60 }}
       />
       <Text
