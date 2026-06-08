@@ -17,7 +17,7 @@ import { CartContext } from "../context/CartContext";
 import { FavoritesContext } from "../context/FavoritesContext";
 import { AddressContext } from "../context/AddressContext";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.1:5000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
 export default function ProductScreen({ route, navigation }) {
   const { product } = route.params;

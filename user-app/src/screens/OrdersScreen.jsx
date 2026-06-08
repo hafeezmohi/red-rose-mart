@@ -3,7 +3,7 @@ import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshCon
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://red-rose-backend.onrender.com/';
 
 const STATUS_CONFIG = {
   placed:           { label: 'Pending', color: '#f59e0b', bg: '#fefce8' },

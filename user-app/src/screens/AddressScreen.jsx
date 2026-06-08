@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { CartContext } from '../context/CartContext';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.x.x:5000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://red-rose-backend.onrender.com/';
 
 export default function AddressScreen({ route, navigation }) {
   const { checkoutData } = route.params;

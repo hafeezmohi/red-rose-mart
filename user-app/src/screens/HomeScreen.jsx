@@ -19,7 +19,7 @@ import BottomNav from "../components/BottomNav";
 import { CartContext } from "../context/CartContext";
 import { AddressContext } from "../context/AddressContext";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.1:5000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
 const categories = [
   { id: "all", name: "All Categories", icon: "grid-outline" },

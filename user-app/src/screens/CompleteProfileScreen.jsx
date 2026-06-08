@@ -15,7 +15,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
 export default function CompleteProfileScreen({ navigation }) {
   const [phone, setPhone] = useState("");

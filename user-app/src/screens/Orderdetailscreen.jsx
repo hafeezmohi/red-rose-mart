@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.x.x:5000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
 const STATUS_CONFIG = {
   placed: { label: "Pending", emoji: "🕐", color: "#f59e0b", bg: "#fefce8" },
