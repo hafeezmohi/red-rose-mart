@@ -2,9 +2,11 @@ import { useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { CartContext } from "../context/CartContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BottomNav({ navigation, route }) {
   const { cartItems } = useContext(CartContext);
+  const insets = useSafeAreaInsets();
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const activeRoute = route?.name;
@@ -18,7 +20,7 @@ export default function BottomNav({ navigation, route }) {
     <View
       style={{
         position: "absolute",
-        bottom: 12,
+        bottom: insets.bottom + 12,
         left: 14,
         right: 14,
         height: 72,
@@ -36,7 +38,10 @@ export default function BottomNav({ navigation, route }) {
         shadowRadius: 10,
       }}
     >
-      <TouchableOpacity onPress={() => navigation.navigate("Home")} style={{ alignItems: "center" }}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Home")}
+        style={{ alignItems: "center" }}
+      >
         <Ionicons
           name={activeRoute === "Home" ? "home" : "home-outline"}
           size={24}
@@ -47,7 +52,10 @@ export default function BottomNav({ navigation, route }) {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("Orders")} style={{ alignItems: "center" }}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Orders")}
+        style={{ alignItems: "center" }}
+      >
         <Ionicons
           name={activeRoute === "Orders" ? "cube" : "cube-outline"}
           size={24}
@@ -71,7 +79,6 @@ export default function BottomNav({ navigation, route }) {
             size={24}
             color={getColor("Cart")}
           />
-
           {cartCount > 0 && (
             <View
               style={{
@@ -87,19 +94,27 @@ export default function BottomNav({ navigation, route }) {
                 paddingHorizontal: 4,
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "bold" }}>
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontSize: 11,
+                  fontWeight: "bold",
+                }}
+              >
                 {cartCount}
               </Text>
             </View>
           )}
         </View>
-
         <Text style={{ fontSize: 12, marginTop: 2, color: getColor("Cart") }}>
           Cart
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={{ alignItems: "center" }}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Profile")}
+        style={{ alignItems: "center" }}
+      >
         <Ionicons
           name={activeRoute === "Profile" ? "person" : "person-outline"}
           size={24}
