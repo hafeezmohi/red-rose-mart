@@ -13,6 +13,7 @@ import {
   StatusBar,
   Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNav from "../components/BottomNav";
@@ -457,7 +458,7 @@ export default function HomeScreen({ navigation, route }) {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
       <StatusBar barStyle="light-content" backgroundColor="#0a1f44" />
 
       <ScrollView
@@ -1250,6 +1251,6 @@ export default function HomeScreen({ navigation, route }) {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

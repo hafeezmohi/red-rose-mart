@@ -12,6 +12,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 
@@ -183,10 +184,11 @@ export default function CompleteProfileScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1, backgroundColor: "#A50021" }}
-    >
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: "#A50021" }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 28,
@@ -380,6 +382,7 @@ export default function CompleteProfileScreen({ navigation }) {
           Your information is securely encrypted
         </Text>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

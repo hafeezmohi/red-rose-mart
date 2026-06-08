@@ -9,6 +9,7 @@ import {
   TextInput,
   Linking,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -120,8 +121,7 @@ export default function ProductScreen({ route, navigation }) {
       : displayAddress;
 
   return (
-    <View
-      style={{
+    <SafeAreaView edges={["bottom"]} style={{
         flex: 1,
         backgroundColor: "#f5f5f5",
       }}
@@ -690,6 +690,6 @@ export default function ProductScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

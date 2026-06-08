@@ -6,6 +6,7 @@ import {
   Image,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -73,7 +74,8 @@ export default function WelcomeScreen({ navigation }) {
   };
 
   return (
-    <View
+    <SafeAreaView
+      edges={["bottom"]}
       style={{
         flex: 1,
         backgroundColor: "#A50021",
@@ -139,6 +141,6 @@ export default function WelcomeScreen({ navigation }) {
           </>
         )}
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

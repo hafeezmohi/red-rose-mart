@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, Text, Image, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SplashScreen({ navigation }) {
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function SplashScreen({ navigation }) {
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: "#A50021",
@@ -85,6 +86,6 @@ export default function SplashScreen({ navigation }) {
       <View style={{ marginTop: 40 }}>
         <ActivityIndicator size="large" color="#ffffff" />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

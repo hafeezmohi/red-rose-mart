@@ -10,6 +10,8 @@ import {
     View,
 } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import BottomNav from '../components/BottomNav';
 
 import {
@@ -32,7 +34,8 @@ export default function WishlistScreen({
         useContext(CartContext);
 
     return (
-        <View
+        <SafeAreaView
+            edges={["bottom"]}
             style={{
                 flex: 1,
                 backgroundColor: '#f7f3f3',
@@ -210,6 +213,6 @@ export default function WishlistScreen({
             </ScrollView>
 
             <BottomNav navigation={navigation} />
-        </View>
+        </SafeAreaView>
     );
 }

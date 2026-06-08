@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
 
@@ -79,7 +80,7 @@ export default function ProfileScreen({ navigation, route }) {
     : 'RR';
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F7F3F3' }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#F7F3F3' }}>
       <StatusBar barStyle="light-content" backgroundColor="#A50021" />
 
       {/* Header */}
@@ -224,6 +225,6 @@ export default function ProfileScreen({ navigation, route }) {
   navigation={navigation}
   route={route}
 />
-    </View>
+    </SafeAreaView>
   );
 }

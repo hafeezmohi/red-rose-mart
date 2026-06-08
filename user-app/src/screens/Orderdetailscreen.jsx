@@ -8,6 +8,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
@@ -118,7 +119,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f7f3f3" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f3f3" }}>
       {/* Header */}
       <View
         style={{
@@ -573,6 +574,6 @@ export default function OrderDetailScreen({ route, navigation }) {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

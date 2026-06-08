@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import { CartContext } from '../context/CartContext';
 
@@ -30,7 +31,7 @@ export default function CartScreen({ navigation, route }) {
 
   if (cartItems.length === 0) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
         <View
           style={{
             flex: 1,
@@ -92,12 +93,12 @@ export default function CartScreen({ navigation, route }) {
           navigation={navigation}
           route={route}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -377,7 +378,7 @@ export default function CartScreen({ navigation, route }) {
         navigation={navigation}
         route={route}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

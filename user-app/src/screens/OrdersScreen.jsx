@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
 
@@ -50,7 +51,7 @@ export default function OrdersScreen({ navigation, route }) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#A50021']} />}
         contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 18, paddingBottom: 140 }}
@@ -129,6 +130,6 @@ export default function OrdersScreen({ navigation, route }) {
   navigation={navigation}
   route={route}
 />
-    </View>
+    </SafeAreaView>
   );
 }

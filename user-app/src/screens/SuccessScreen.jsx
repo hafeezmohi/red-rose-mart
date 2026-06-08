@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SuccessScreen({ route, navigation }) {
   const order = route.params?.order;
@@ -8,7 +9,7 @@ export default function SuccessScreen({ route, navigation }) {
   )}`;
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: '#f5f5f5',
@@ -186,6 +187,6 @@ export default function SuccessScreen({ route, navigation }) {
           Continue Shopping
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import SplashScreen from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
@@ -30,33 +31,35 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <AddressProvider>
-      <FavoritesProvider>
-        <CartProvider>
-          <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName="Splash"
-              screenOptions={{ headerShown: false }}
-            >
-              <Stack.Screen name="Splash" component={SplashScreen} />
-              <Stack.Screen name="Welcome" component={WelcomeScreen} />
-              <Stack.Screen
-                name="CompleteProfile"
-                component={CompleteProfileScreen}
-              />
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Product" component={ProductScreen} />
-              <Stack.Screen name="Cart" component={CartScreen} />
-              <Stack.Screen name="Orders" component={OrdersScreen} />
-              <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-              <Stack.Screen name="Profile" component={ProfileScreen} />
-              <Stack.Screen name="Address" component={AddressScreen} />
-              <Stack.Screen name="Wishlist" component={WishlistScreen} />
-              <Stack.Screen name="Success" component={SuccessScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </CartProvider>
-      </FavoritesProvider>
-    </AddressProvider>
+    <SafeAreaProvider>
+      <AddressProvider>
+        <FavoritesProvider>
+          <CartProvider>
+            <NavigationContainer>
+              <Stack.Navigator
+                initialRouteName="Splash"
+                screenOptions={{ headerShown: false }}
+              >
+                <Stack.Screen name="Splash" component={SplashScreen} />
+                <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                <Stack.Screen
+                  name="CompleteProfile"
+                  component={CompleteProfileScreen}
+                />
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Product" component={ProductScreen} />
+                <Stack.Screen name="Cart" component={CartScreen} />
+                <Stack.Screen name="Orders" component={OrdersScreen} />
+                <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="Address" component={AddressScreen} />
+                <Stack.Screen name="Wishlist" component={WishlistScreen} />
+                <Stack.Screen name="Success" component={SuccessScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </CartProvider>
+        </FavoritesProvider>
+      </AddressProvider>
+    </SafeAreaProvider>
   );
 }

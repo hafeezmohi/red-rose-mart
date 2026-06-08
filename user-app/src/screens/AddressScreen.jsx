@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { CartContext } from '../context/CartContext';
@@ -121,7 +122,7 @@ export default function AddressScreen({ route, navigation }) {
     addr.pincode === selectedAddress.pincode;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
       <ScrollView contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 20, paddingBottom: 100 }}>
 
         <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a' }}>Delivery Address 📍</Text>
@@ -299,6 +300,6 @@ export default function AddressScreen({ route, navigation }) {
           }
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
