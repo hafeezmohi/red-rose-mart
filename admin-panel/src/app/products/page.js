@@ -9,7 +9,7 @@ import {
     ImagePlus, PackageX, Star, Eye, EyeOff,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.55.36.201:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://red-rose-backend.onrender.com";
 const LIMIT = 25;
 
 const CATEGORIES = [
