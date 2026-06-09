@@ -12,7 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.124.192.201:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://red-rose-backend.onrender.com";
 
 export default function DeliveryPage() {
   const [orders, setOrders] = useState([]);
