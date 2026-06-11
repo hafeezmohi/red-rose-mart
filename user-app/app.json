@@ -2,7 +2,7 @@
   "expo": {
     "name": "Red Rose Online Grocery",
     "slug": "redrosemartapp",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -27,6 +27,7 @@
     },
     "android": {
       "package": "com.muzzu8421.redrosemartapp",
+      "versionCode": 2,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
