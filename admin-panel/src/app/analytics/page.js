@@ -109,6 +109,7 @@ function CustomTooltip({ active, payload, label, prefix = "" }) {
 export default function AnalyticsPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState("today"); // today, week, month
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -134,6 +135,15 @@ export default function AnalyticsPage() {
 
   const s = data?.summary;
 
+  const getPeriodicData = () => {
+    if (!s) return { revenue: 0, orders: 0, label: "" };
+    if (period === "today") return { revenue: s.revenueToday, orders: s.ordersToday, label: "Today's" };
+    if (period === "week") return { revenue: s.revenueWeek, orders: s.ordersWeek, label: "This Week's" };
+    if (period === "month") return { revenue: s.revenueMonth, orders: s.ordersMonth, label: "This Month's" };
+  };
+
+  const periodicData = getPeriodicData();
+
   return (
     <div className="flex bg-gray-100 min-h-screen">
       <Sidebar />
@@ -143,16 +153,64 @@ export default function AnalyticsPage() {
 
         <div className="p-4 md:p-6">
           {/* Header */}
-          <div className="mb-6 md:mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-black">
-              Analytics
-            </h1>
-            <p className="text-gray-500 mt-1 text-sm md:text-base">
-              Monitor store performance and growth
-            </p>
+          <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-black">
+                Analytics
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm md:text-base">
+                Monitor store performance and growth
+              </p>
+            </div>
+            
+            {/* Period Toggle */}
+            <div className="flex bg-gray-200/60 p-1 rounded-xl w-fit">
+              {["today", "week", "month"].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 capitalize ${
+                    period === p
+                      ? "bg-white text-black shadow-sm"
+                      : "text-gray-500 hover:text-black"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Periodic Stats ── */}
+          <div className="grid grid-cols-2 gap-3 md:gap-5 mb-6 md:mb-8">
+            {loading ? (
+              Array.from({ length: 2 }).map((_, i) => <StatSkeleton key={i} />)
+            ) : (
+              <>
+                <StatCard
+                  label={`${periodicData.label} Revenue`}
+                  value={fmt(periodicData.revenue)}
+                  icon={DollarSign}
+                  iconBg="bg-green-100"
+                  iconColor="text-green-600"
+                  sub="Delivered orders only"
+                  subColor="text-green-600/70"
+                />
+                <StatCard
+                  label={`${periodicData.label} Orders`}
+                  value={periodicData.orders.toLocaleString("en-IN")}
+                  icon={ShoppingBag}
+                  iconBg="bg-blue-100"
+                  iconColor="text-blue-600"
+                  sub="All placed orders"
+                  subColor="text-blue-600/70"
+                />
+              </>
+            )}
           </div>
 
           {/* ── Summary Stats ── */}
+          <h2 className="text-xl font-bold text-black mb-4">Overall Lifetime Stats</h2>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-5 mb-6 md:mb-8">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
@@ -162,15 +220,15 @@ export default function AnalyticsPage() {
                   label="Total Revenue"
                   value={fmt(s.totalRevenue)}
                   icon={DollarSign}
-                  iconBg="bg-green-100"
-                  iconColor="text-green-600"
+                  iconBg="bg-gray-200"
+                  iconColor="text-gray-700"
                 />
                 <StatCard
                   label="Total Orders"
                   value={s.totalOrders.toLocaleString("en-IN")}
                   icon={ShoppingBag}
-                  iconBg="bg-blue-100"
-                  iconColor="text-blue-600"
+                  iconBg="bg-gray-200"
+                  iconColor="text-gray-700"
                 />
                 <StatCard
                   label="Total Users"
@@ -191,6 +249,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* ── Order Status Row ── */}
+          <h2 className="text-xl font-bold text-black mb-4">Current Order Pipeline</h2>
           <div className="grid grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8">
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => <StatSkeleton key={i} />)

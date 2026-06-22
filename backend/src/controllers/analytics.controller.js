@@ -34,6 +34,7 @@ export const getAnalytics = async (req, res, next) => {
       monthlyAgg,
       topProductsAgg,
       newUsersAgg,
+      periodicAgg,
     ] = await Promise.all([
       // 1. Total users
       User.countDocuments(),
@@ -104,6 +105,57 @@ export const getAnalytics = async (req, res, next) => {
         },
         { $sort: { "_id.year": 1, "_id.month": 1 } },
       ]),
+
+      // 8. Day, Week, Month specific metrics
+      Order.aggregate([
+        {
+          $group: {
+            _id: null,
+            revenueToday: {
+              $sum: {
+                $cond: [
+                  { $and: [{ $gte: ["$createdAt", new Date(now.setHours(0,0,0,0))] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  "$totalPrice",
+                  0
+                ]
+              }
+            },
+            revenueWeek: {
+              $sum: {
+                $cond: [
+                  { $and: [{ $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - new Date().getDay())).setHours(0,0,0,0)] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  "$totalPrice",
+                  0
+                ]
+              }
+            },
+            revenueMonth: {
+              $sum: {
+                $cond: [
+                  { $and: [{ $gte: ["$createdAt", new Date(new Date().getFullYear(), new Date().getMonth(), 1)] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  "$totalPrice",
+                  0
+                ]
+              }
+            },
+            ordersToday: {
+              $sum: {
+                $cond: [{ $gte: ["$createdAt", new Date(new Date().setHours(0,0,0,0))] }, 1, 0]
+              }
+            },
+            ordersWeek: {
+              $sum: {
+                $cond: [{ $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - new Date().getDay())).setHours(0,0,0,0)] }, 1, 0]
+              }
+            },
+            ordersMonth: {
+              $sum: {
+                $cond: [{ $gte: ["$createdAt", new Date(new Date().getFullYear(), new Date().getMonth(), 1)] }, 1, 0]
+              }
+            }
+          }
+        }
+      ]),
     ]);
 
     // ── Shape monthly chart data (fill missing months with 0) ────────────
@@ -143,6 +195,9 @@ export const getAnalytics = async (req, res, next) => {
 
     // ── Total revenue scalar ─────────────────────────────────────────────
     const totalRevenue = revenueAgg[0]?.total || 0;
+    
+    // Day, Week, Month scalar
+    const pStats = periodicAgg[0] || {};
 
     sendSuccess(res, 200, "Analytics fetched", {
       summary: {
@@ -153,6 +208,12 @@ export const getAnalytics = async (req, res, next) => {
         cancelledOrders: statusMap.cancelled,
         pendingOrders: statusMap.placed,
         outForDelivery: statusMap.out_for_delivery,
+        revenueToday: pStats.revenueToday || 0,
+        revenueWeek: pStats.revenueWeek || 0,
+        revenueMonth: pStats.revenueMonth || 0,
+        ordersToday: pStats.ordersToday || 0,
+        ordersWeek: pStats.ordersWeek || 0,
+        ordersMonth: pStats.ordersMonth || 0,
       },
       chartData, // last 6 months — revenue, orders, newUsers per month
       topProducts: topProductsAgg.map((p) => ({
@@ -165,3 +226,4 @@ export const getAnalytics = async (req, res, next) => {
     next(err);
   }
 };
+

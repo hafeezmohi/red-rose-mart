@@ -114,18 +114,14 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Delete product (admin only — soft delete)
+// @desc    Delete product (admin only — hard delete)
 // @route   DELETE /api/products/:id
 // @access  Admin
 export const deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true },
-    );
+    const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return sendError(res, 404, "Product not found");
-    sendSuccess(res, 200, "Product deleted");
+    sendSuccess(res, 200, "Product deleted permanently");
   } catch (err) {
     next(err);
   }

@@ -119,7 +119,7 @@ export const getMyOrders = async (req, res, next) => {
 // ─────────────────────────────────────────────
 export const getOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate("user", "name email phone");
 
     if (!order) return sendError(res, 404, "Order not found");
 
@@ -311,7 +311,7 @@ export const updateOrderStatus = async (req, res, next) => {
 
     const order = await Order.findById(req.params.id).populate(
       "user",
-      "pushToken",
+      "name email phone pushToken",
     );
     if (!order) return sendError(res, 404, "Order not found");
 
