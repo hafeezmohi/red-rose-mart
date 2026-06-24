@@ -37,9 +37,7 @@ export default function CompleteProfileScreen({ navigation }) {
       value.includes("kaghaznagar") ||
       value.includes("asifabad") ||
       value.includes("komaram bheem") ||
-      value.includes("adilabad") ||
-      // TEMPORARY: Purna support (remove later)
-      value.includes("purna")
+      value.includes("adilabad")
     );
   };
 
@@ -90,11 +88,7 @@ export default function CompleteProfileScreen({ navigation }) {
         const isKagaznagar =
           city.includes("kagaznagar") ||
           district.includes("kagaznagar") ||
-          formattedLower.includes("kagaznagar") ||
-          // TEMPORARY: Purna support (remove later)
-          city.includes("purna") ||
-          district.includes("purna") ||
-          formattedLower.includes("purna");
+          formattedLower.includes("kagaznagar");
 
         if (!isKagaznagar) {
           setAddress("");
@@ -129,8 +123,9 @@ export default function CompleteProfileScreen({ navigation }) {
   };
 
   const handleContinue = async () => {
-    if (!phone.trim()) {
-      Alert.alert("Missing Phone", "Please enter your phone number.");
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert("Invalid Phone", "Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
@@ -264,23 +259,26 @@ export default function CompleteProfileScreen({ navigation }) {
             </Text>
           </View>
 
-          <TextInput
-            placeholder="+91 9876543210"
-            placeholderTextColor="#bcbcbc"
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-            style={{
-              color: "#1a1a1a",
-              height: moderateScale(54),
-              borderWidth: 1,
-              borderColor: "#d9d9d9",
-              borderRadius: 16,
-              paddingHorizontal: 18,
-              fontSize: 16,
-              backgroundColor: "#fafafa",
-            }}
-          />
+          <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#d9d9d9", borderRadius: 16, backgroundColor: "#fafafa", height: moderateScale(54) }}>
+            <View style={{ paddingHorizontal: 16, borderRightWidth: 1, borderRightColor: "#d9d9d9", height: "100%", justifyContent: "center" }}>
+              <Text style={{ fontSize: 16, color: "#1a1a1a", fontWeight: "600" }}>+91</Text>
+            </View>
+            <TextInput
+              placeholder="9876543210"
+              placeholderTextColor="#bcbcbc"
+              keyboardType="phone-pad"
+              maxLength={10}
+              value={phone}
+              onChangeText={setPhone}
+              style={{
+                flex: 1,
+                color: "#1a1a1a",
+                height: "100%",
+                paddingHorizontal: 16,
+                fontSize: 16,
+              }}
+            />
+          </View>
 
           {/* Location */}
           <View

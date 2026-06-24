@@ -106,6 +106,11 @@ export const updateProfile = async (req, res, next) => {
 
     if (!phone) return sendError(res, 400, 'Phone number is required');
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return sendError(res, 400, 'Please enter a valid 10-digit Indian mobile number');
+    }
+
     const updateData = { phone };
     if (address) updateData.address = address;
 

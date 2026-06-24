@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, StatusBar } from 'react-native';
+import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, StatusBar, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
@@ -36,6 +37,9 @@ const MenuItem = ({ label, onPress, isLast }) => (
 
 export default function ProfileScreen({ navigation, route }) {
   const [user, setUser] = useState(null);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [editPhone, setEditPhone] = useState('');
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -77,6 +81,45 @@ export default function ProfileScreen({ navigation, route }) {
     ]);
   };
 
+  const handleUpdatePhone = async () => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(editPhone)) {
+      Alert.alert("Invalid Phone", "Please enter a valid 10-digit Indian mobile number.");
+      return;
+    }
+
+    try {
+      setIsUpdatingPhone(true);
+      const token = await AsyncStorage.getItem('token');
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
+      
+      const res = await fetch(`${API_URL}/api/auth/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ phone: editPhone }),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        Alert.alert("Error", data.message || "Failed to update phone number");
+        return;
+      }
+
+      const updatedUser = { ...user, phone: editPhone, isProfileComplete: true };
+      setUser(updatedUser);
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      setEditModalVisible(false);
+      Alert.alert("Success", "Phone number updated successfully");
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong while updating");
+    } finally {
+      setIsUpdatingPhone(false);
+    }
+  };
+
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : 'RR';
@@ -115,11 +158,18 @@ export default function ProfileScreen({ navigation, route }) {
         </Text>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 16 }}>
-          {user?.phone && (
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 }} 
+            onPress={() => {
+              setEditPhone(user?.phone || '');
+              setEditModalVisible(true);
+            }}
+          >
             <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>
-              {user.phone}
+              {user?.phone || 'Add Phone'}
             </Text>
-          )}
+            <Ionicons name="pencil" size={12} color="rgba(255,255,255,0.8)" />
+          </TouchableOpacity>
           {user?.phone && user?.email && (
             <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' }} />
           )}
@@ -224,9 +274,56 @@ export default function ProfileScreen({ navigation, route }) {
       </ScrollView>
 
       <BottomNav
-  navigation={navigation}
-  route={route}
-/>
+        navigation={navigation}
+        route={route}
+      />
+
+      {/* Edit Phone Modal */}
+      <Modal visible={isEditModalVisible} animationType="fade" transparent={true} onRequestClose={() => setEditModalVisible(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 16 }}>Edit Phone Number</Text>
+            
+            <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#d9d9d9", borderRadius: 16, backgroundColor: "#fafafa", height: moderateScale(54), marginBottom: 24 }}>
+              <View style={{ paddingHorizontal: 16, borderRightWidth: 1, borderRightColor: "#d9d9d9", height: "100%", justifyContent: "center" }}>
+                <Text style={{ fontSize: 16, color: "#1a1a1a", fontWeight: "600" }}>+91</Text>
+              </View>
+              <TextInput
+                placeholder="9876543210"
+                placeholderTextColor="#bcbcbc"
+                keyboardType="phone-pad"
+                maxLength={10}
+                value={editPhone}
+                onChangeText={setEditPhone}
+                style={{
+                  flex: 1,
+                  color: "#1a1a1a",
+                  height: "100%",
+                  paddingHorizontal: 16,
+                  fontSize: 16,
+                }}
+              />
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#f5f5f5', alignItems: 'center' }}
+                onPress={() => setEditModalVisible(false)}
+                disabled={isUpdatingPhone}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#666' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#A50021', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}
+                onPress={handleUpdatePhone}
+                disabled={isUpdatingPhone}
+              >
+                {isUpdatingPhone ? <ActivityIndicator size="small" color="#fff" /> : <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Save</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
