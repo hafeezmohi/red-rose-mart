@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity, View } from 'react-native';
+import { moderateScale } from '../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SuccessScreen({ route, navigation }) {
@@ -21,21 +22,21 @@ export default function SuccessScreen({ route, navigation }) {
       {/* Success Icon */}
       <View
         style={{
-          width: 130,
-          height: 130,
-          borderRadius: 40,
+          width: moderateScale(120),
+          height: moderateScale(120),
+          borderRadius: moderateScale(36),
           backgroundColor: '#E8F5E9',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <Text style={{ fontSize: 70 }}>✅</Text>
+        <Text style={{ fontSize: moderateScale(64) }}>✅</Text>
       </View>
 
       {/* Title */}
       <Text
         style={{
-          fontSize: 32,
+          fontSize: moderateScale(30),
           fontWeight: '800',
           color: '#111827',
           marginTop: 30,

@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { CartContext } from "../context/CartContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { moderateScale } from '../utils/responsive';
 
 export default function BottomNav({ navigation, route }) {
   const { cartItems } = useContext(CartContext);
@@ -23,7 +24,7 @@ export default function BottomNav({ navigation, route }) {
         bottom: insets.bottom + 12,
         left: 14,
         right: 14,
-        height: 72,
+        height: moderateScale(64),
         paddingBottom: 4,
         backgroundColor: "#ffffff",
         borderRadius: 22,
@@ -47,7 +48,7 @@ export default function BottomNav({ navigation, route }) {
           size={24}
           color={getColor("Home")}
         />
-        <Text style={{ fontSize: 12, marginTop: 2, color: getColor("Home") }}>
+        <Text style={{ fontSize: moderateScale(11), marginTop: 2, color: getColor("Home") }}>
           Home
         </Text>
       </TouchableOpacity>
@@ -58,10 +59,10 @@ export default function BottomNav({ navigation, route }) {
       >
         <Ionicons
           name={activeRoute === "Orders" ? "cube" : "cube-outline"}
-          size={24}
+          size={moderateScale(22)}
           color={getColor("Orders")}
         />
-        <Text style={{ fontSize: 12, marginTop: 2, color: getColor("Orders") }}>
+        <Text style={{ fontSize: moderateScale(11), marginTop: 2, color: getColor("Orders") }}>
           Orders
         </Text>
       </TouchableOpacity>
@@ -76,7 +77,7 @@ export default function BottomNav({ navigation, route }) {
         <View>
           <Ionicons
             name={activeRoute === "Cart" ? "cart" : "cart-outline"}
-            size={24}
+            size={moderateScale(22)}
             color={getColor("Cart")}
           />
           {cartCount > 0 && (
@@ -86,18 +87,18 @@ export default function BottomNav({ navigation, route }) {
                 top: -6,
                 right: -10,
                 backgroundColor: "#A50021",
-                minWidth: 20,
-                height: 20,
-                borderRadius: 10,
+                minWidth: moderateScale(18),
+                height: moderateScale(18),
+                borderRadius: moderateScale(9),
                 justifyContent: "center",
                 alignItems: "center",
-                paddingHorizontal: 4,
+                paddingHorizontal: moderateScale(3),
               }}
             >
               <Text
                 style={{
                   color: "#ffffff",
-                  fontSize: 11,
+                  fontSize: moderateScale(10),
                   fontWeight: "bold",
                 }}
               >
@@ -106,7 +107,7 @@ export default function BottomNav({ navigation, route }) {
             </View>
           )}
         </View>
-        <Text style={{ fontSize: 12, marginTop: 2, color: getColor("Cart") }}>
+        <Text style={{ fontSize: moderateScale(11), marginTop: 2, color: getColor("Cart") }}>
           Cart
         </Text>
       </TouchableOpacity>
@@ -117,10 +118,10 @@ export default function BottomNav({ navigation, route }) {
       >
         <Ionicons
           name={activeRoute === "Profile" ? "person" : "person-outline"}
-          size={24}
+          size={moderateScale(22)}
           color={getColor("Profile")}
         />
-        <Text style={{ fontSize: 12, marginTop: 2, color: getColor("Profile") }}>
+        <Text style={{ fontSize: moderateScale(11), marginTop: 2, color: getColor("Profile") }}>
           Profile
         </Text>
       </TouchableOpacity>

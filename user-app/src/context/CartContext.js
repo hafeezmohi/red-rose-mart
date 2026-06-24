@@ -15,6 +15,7 @@ export const CartProvider = ({ children }) => {
   // fetch cart from backend
   const fetchCart = useCallback(async () => {
     try {
+      setLoading(true);
       const token = await getToken();
       if (!token) return;
 
@@ -24,6 +25,18 @@ export const CartProvider = ({ children }) => {
       const data = await res.json();
 
       if (data.success) {
+        // Detect corrupted cart items (where product is null because of $oid corruption)
+        const hasCorrupted = (data.cart.items || []).some(item => !item.product);
+        if (hasCorrupted) {
+          console.warn('Corrupted cart detected, clearing cart...');
+          await fetch(`${API_URL}/api/cart`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setCartItems([]);
+          return;
+        }
+
         // map backend cart items to match UI shape
         const mapped = (data.cart.items || []).map(item => ({
           id: item.product._id,
@@ -39,6 +52,8 @@ export const CartProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('Failed to fetch cart:', err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 

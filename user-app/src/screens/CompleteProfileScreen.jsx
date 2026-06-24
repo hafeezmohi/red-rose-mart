@@ -13,6 +13,8 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { moderateScale } from '../utils/responsive';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 
@@ -25,6 +27,7 @@ export default function CompleteProfileScreen({ navigation }) {
   const [locationLoading, setLocationLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [locationVerified, setLocationVerified] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const isKagaznagarAddress = (text = "") => {
     const value = text.toLowerCase();
@@ -192,7 +195,7 @@ export default function CompleteProfileScreen({ navigation }) {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 28,
-          paddingTop: 90,
+          paddingTop: insets.top + 24,
           paddingBottom: 60,
         }}
         keyboardShouldPersistTaps="handled"
@@ -201,12 +204,12 @@ export default function CompleteProfileScreen({ navigation }) {
         <View style={{ alignItems: "center" }}>
           <Image
             source={require("../../assets/icon.png")}
-            style={{ width: 120, height: 120, borderRadius: 60 }}
+            style={{ width: moderateScale(110), height: moderateScale(110), borderRadius: moderateScale(55) }}
           />
           <Text
             style={{
               color: "#ffffff",
-              fontSize: 34,
+              fontSize: moderateScale(30),
               fontWeight: "bold",
               marginTop: 18,
             }}
@@ -269,7 +272,7 @@ export default function CompleteProfileScreen({ navigation }) {
             onChangeText={setPhone}
             style={{
               color: "#1a1a1a",
-              height: 58,
+              height: moderateScale(54),
               borderWidth: 1,
               borderColor: "#d9d9d9",
               borderRadius: 16,
@@ -315,7 +318,7 @@ export default function CompleteProfileScreen({ navigation }) {
               borderColor: locationVerified ? "#2E7D32" : "#A50021",
               borderWidth: 1,
               borderRadius: 14,
-              height: 50,
+              height: moderateScale(48),
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
@@ -347,7 +350,7 @@ export default function CompleteProfileScreen({ navigation }) {
             style={{
               backgroundColor:
                 loading || !locationVerified || !phone.trim() ? "#C8C8C8" : "#A50021",
-              height: 62,
+              height: moderateScale(58),
               borderRadius: 18,
               justifyContent: "center",
               alignItems: "center",

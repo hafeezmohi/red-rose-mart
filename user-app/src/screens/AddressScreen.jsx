@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { CartContext } from '../context/CartContext';
+import { BOTTOM_NAV_HEIGHT } from '../utils/responsive';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://red-rose-backend.onrender.com/';
 
@@ -16,6 +18,7 @@ export default function AddressScreen({ route, navigation }) {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
   const { clearCart } = useContext(CartContext);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const fetchSavedAddress = async () => {
@@ -108,9 +111,20 @@ export default function AddressScreen({ route, navigation }) {
 
   if (addressLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f3f3' }}>
-        <ActivityIndicator size="large" color="#A50021" />
-      </View>
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+        <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 8 }}>Delivery Address 📍</Text>
+          <Skeleton width="80%" height={22} style={{ marginBottom: 28 }} />
+          <Text style={{ fontWeight: '700', fontSize: 15, color: '#333', marginBottom: 12 }}>Choose Address</Text>
+          {[1,2].map(i => (
+            <View key={i} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+              <Skeleton width="40%" height={18} style={{ marginBottom: 12 }} />
+              <Skeleton width="100%" height={14} style={{ marginBottom: 6 }} />
+              <Skeleton width="80%" height={14} />
+            </View>
+          ))}
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -123,7 +137,7 @@ export default function AddressScreen({ route, navigation }) {
 
   return (
     <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 20, paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 100 }}>
 
         <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a' }}>Delivery Address 📍</Text>
         <Text style={{ color: '#888', marginTop: 8, fontSize: 14, lineHeight: 22 }}>
@@ -277,7 +291,7 @@ export default function AddressScreen({ route, navigation }) {
         backgroundColor: '#f7f3f3',
         paddingHorizontal: 20,
         paddingTop: 12,
-        paddingBottom: 28,
+        paddingBottom: insets.bottom + 12,
         borderTopWidth: 1,
         borderTopColor: '#f0e5e5',
       }}>

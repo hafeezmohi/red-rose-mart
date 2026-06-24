@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
+import { moderateScale, BOTTOM_NAV_HEIGHT } from '../utils/responsive';
 
 const MenuItem = ({ label, onPress, isLast }) => (
   <TouchableOpacity
@@ -35,6 +36,7 @@ const MenuItem = ({ label, onPress, isLast }) => (
 
 export default function ProfileScreen({ navigation, route }) {
   const [user, setUser] = useState(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadUser();
@@ -86,16 +88,16 @@ export default function ProfileScreen({ navigation, route }) {
       {/* Header */}
       <View style={{
         backgroundColor: '#A50021',
-        paddingTop: 54,
+        paddingTop: insets.top + 12,
         paddingBottom: 36,
         paddingHorizontal: 24,
         alignItems: 'center',
       }}>
         {/* Avatar */}
         <View style={{
-          width: 80,
-          height: 80,
-          borderRadius: 40,
+          width: moderateScale(76),
+          height: moderateScale(76),
+          borderRadius: moderateScale(38),
           backgroundColor: 'rgba(255,255,255,0.18)',
           borderWidth: 2,
           borderColor: 'rgba(255,255,255,0.35)',
@@ -130,7 +132,7 @@ export default function ProfileScreen({ navigation, route }) {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: BOTTOM_NAV_HEIGHT + insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Account Section */}

@@ -8,8 +8,10 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { moderateScale } from "../utils/responsive";
+import Skeleton from "../components/Skeleton";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
@@ -64,6 +66,8 @@ export default function OrderDetailScreen({ route, navigation }) {
   const { order: initialOrder } = route.params;
   const [order, setOrder] = useState(initialOrder);
   const [cancelling, setCancelling] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const status = STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.placed;
   const currentStep = getStepIndex(order.orderStatus);
@@ -118,13 +122,40 @@ export default function OrderDetailScreen({ route, navigation }) {
     ]);
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+        <View style={{ paddingTop: insets.top + 10, paddingHorizontal: 20 }}>
+          <Skeleton width="40%" height={24} style={{ marginBottom: 30 }} />
+          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, marginBottom: 20 }}>
+            <Skeleton width="60%" height={18} style={{ marginBottom: 12 }} />
+            <Skeleton width="40%" height={14} style={{ marginBottom: 24 }} />
+            <Skeleton width="100%" height={60} borderRadius={10} />
+          </View>
+          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
+             <Skeleton width="50%" height={18} style={{ marginBottom: 16 }} />
+             {[1,2,3].map(i => (
+                <View key={i} style={{ flexDirection: 'row', marginBottom: 16 }}>
+                  <Skeleton width={36} height={36} borderRadius={18} />
+                  <View style={{ marginLeft: 12, justifyContent: 'center' }}>
+                     <Skeleton width={100} height={14} style={{ marginBottom: 6 }} />
+                     <Skeleton width={60} height={12} />
+                  </View>
+                </View>
+             ))}
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f3f3" }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: "#f7f3f3" }}>
       {/* Header */}
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingTop: 55,
+          paddingTop: insets.top + 10,
           paddingBottom: 16,
           paddingHorizontal: 18,
           flexDirection: "row",
@@ -137,7 +168,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
           style={{ marginRight: 14 }}
         >
-          <Text style={{ fontSize: 50, color: "#A50021" }}>‹</Text>
+          <Text style={{ fontSize: moderateScale(44), color: "#A50021" }}>‹</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1a1a1a" }}>
@@ -173,7 +204,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         contentContainerStyle={{
           paddingHorizontal: 18,
           paddingTop: 20,
-          paddingBottom: 100,
+          paddingBottom: insets.bottom + 40,
         }}
       >
         {/* Tracking — hide if cancelled */}
@@ -231,9 +262,9 @@ export default function OrderDetailScreen({ route, navigation }) {
                       )}
                       <View
                         style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
+                          width: moderateScale(36),
+                          height: moderateScale(36),
+                          borderRadius: moderateScale(18),
                           backgroundColor: isDone ? "#A50021" : "#e0e0e0",
                           justifyContent: "center",
                           alignItems: "center",
@@ -301,8 +332,8 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <View
                   key={i}
                   style={{
-                    width: 52,
-                    height: 60,
+                    width: moderateScale(48),
+                    height: moderateScale(56),
                     backgroundColor: "#fff",
                     borderRadius: 12,
                     borderWidth: 1.5,

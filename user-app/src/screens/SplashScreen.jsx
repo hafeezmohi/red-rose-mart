@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, Text, Image, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { moderateScale } from '../utils/responsive';
 
 export default function SplashScreen({ navigation }) {
   useEffect(() => {
@@ -60,12 +61,12 @@ export default function SplashScreen({ navigation }) {
     >
       <Image
         source={require("../../assets/icon.png")}
-        style={{ width: 120, height: 120, borderRadius: 60 }}
+        style={{ width: moderateScale(110), height: moderateScale(110), borderRadius: moderateScale(55) }}
       />
       <Text
         style={{
           color: "#ffffff",
-          fontSize: 30,
+          fontSize: moderateScale(28),
           fontWeight: "bold",
           marginTop: 16,
         }}

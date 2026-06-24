@@ -10,6 +10,8 @@ import {
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { wp, hp, moderateScale } from '../utils/responsive';
 
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,6 +23,7 @@ import { AddressContext } from "../context/AddressContext";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
 export default function ProductScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { product } = route.params;
 
   const { addToCart, cartItems } = useContext(CartContext);
@@ -132,7 +135,7 @@ export default function ProductScreen({ route, navigation }) {
       <View
         style={{
           backgroundColor: "#0a1f44",
-          paddingTop: 50,
+          paddingTop: insets.top + 10,
           paddingHorizontal: 16,
           paddingBottom: 16,
         }}
@@ -295,8 +298,8 @@ export default function ProductScreen({ route, navigation }) {
           <Image
             source={{ uri: product.image }}
             style={{
-              width: 260,
-              height: 240,
+              width: wp(65),
+              height: hp(28),
             }}
             resizeMode="contain"
           />
@@ -330,7 +333,7 @@ export default function ProductScreen({ route, navigation }) {
 
           <Text
             style={{
-              fontSize: 28,
+              fontSize: moderateScale(26),
               fontWeight: "bold",
               color: "#111",
               marginTop: 8,
@@ -352,7 +355,7 @@ export default function ProductScreen({ route, navigation }) {
               style={{
                 color: "#A50021",
                 fontWeight: "bold",
-                fontSize: 30,
+                fontSize: moderateScale(28),
               }}
             >
               ₹ {product.price}.00
@@ -450,8 +453,8 @@ export default function ProductScreen({ route, navigation }) {
               <TouchableOpacity
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                 style={{
-                  width: 46,
-                  height: 46,
+                  width: moderateScale(44),
+                  height: moderateScale(44),
                   borderRadius: 14,
                   backgroundColor: "#A50021",
                   justifyContent: "center",
@@ -472,8 +475,8 @@ export default function ProductScreen({ route, navigation }) {
               <View
                 style={{
                   marginHorizontal: 16,
-                  minWidth: 60,
-                  height: 46,
+                  minWidth: moderateScale(56),
+                  height: moderateScale(44),
                   borderRadius: 14,
                   backgroundColor: "#f7f7f7",
                   justifyContent: "center",
@@ -494,8 +497,8 @@ export default function ProductScreen({ route, navigation }) {
               <TouchableOpacity
                 onPress={() => setQuantity((q) => q + 1)}
                 style={{
-                  width: 46,
-                  height: 46,
+                  width: moderateScale(44),
+                  height: moderateScale(44),
                   borderRadius: 14,
                   backgroundColor: "#A50021",
                   justifyContent: "center",
@@ -584,7 +587,7 @@ export default function ProductScreen({ route, navigation }) {
                     })
                   }
                   style={{
-                    width: 160,
+                    width: wp(40),
                     backgroundColor: "#fff",
                     borderRadius: 12,
                     marginRight: 14,
@@ -596,7 +599,7 @@ export default function ProductScreen({ route, navigation }) {
                     source={{ uri: item.image }}
                     style={{
                       width: "100%",
-                      height: 120,
+                      height: hp(14),
                       backgroundColor: "#f9f9f9",
                     }}
                     resizeMode="contain"
@@ -635,7 +638,7 @@ export default function ProductScreen({ route, navigation }) {
       <View
         style={{
           position: "absolute",
-          bottom: 10,
+          bottom: insets.bottom,
           left: 0,
           right: 0,
           flexDirection: "row",

@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNav from '../components/BottomNav';
+import { BOTTOM_NAV_HEIGHT } from '../utils/responsive';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://red-rose-backend.onrender.com/';
 
@@ -17,6 +19,7 @@ export default function OrdersScreen({ navigation, route }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -44,9 +47,26 @@ export default function OrdersScreen({ navigation, route }) {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f3f3' }}>
-        <ActivityIndicator size="large" color="#A50021" />
-      </View>
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+        <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 24 }}>My Orders</Text>
+          {[1,2,3,4].map(i => (
+            <View key={i} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                 <Skeleton width="30%" height={14} />
+                 <Skeleton width="20%" height={14} />
+               </View>
+               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                 <Skeleton width={50} height={50} borderRadius={8} />
+                 <View style={{ marginLeft: 12, flex: 1 }}>
+                   <Skeleton width="70%" height={16} style={{ marginBottom: 6 }} />
+                   <Skeleton width="40%" height={14} />
+                 </View>
+               </View>
+            </View>
+          ))}
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -54,7 +74,7 @@ export default function OrdersScreen({ navigation, route }) {
     <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#A50021']} />}
-        contentContainerStyle={{ paddingTop: 55, paddingHorizontal: 18, paddingBottom: 140 }}
+        contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 18, paddingBottom: BOTTOM_NAV_HEIGHT + insets.bottom + 24 }}
       >
         <Text style={{ color: '#1a1a1a', fontSize: 30, fontWeight: 'bold', marginBottom: 24 }}>My Orders</Text>
 

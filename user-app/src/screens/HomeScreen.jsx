@@ -13,10 +13,12 @@ import {
   StatusBar,
   Dimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { wp, hp, moderateScale, BOTTOM_NAV_HEIGHT } from '../utils/responsive';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNav from "../components/BottomNav";
+import Skeleton from '../components/Skeleton';
 import { CartContext } from "../context/CartContext";
 import { AddressContext } from "../context/AddressContext";
 
@@ -163,6 +165,7 @@ export default function HomeScreen({ navigation, route }) {
   const { selectedAddress } = useContext(AddressContext);
 
   const bannerScrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -288,7 +291,7 @@ export default function HomeScreen({ navigation, route }) {
     appliedMin !== "" || appliedMax !== "" || appliedSort !== "none";
 
   const mappedProducts = products.map((p) => ({
-    id: p._id,
+    id: p._id?.$oid || p._id,
     name: p.name,
     image:
       p.images?.length > 0
@@ -355,25 +358,49 @@ export default function HomeScreen({ navigation, route }) {
   const bestSellerProducts = filteredProducts.slice(6, 12);
   const onSaleProducts = filteredProducts.filter((p) => p.discount).slice(0, 6);
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <ActivityIndicator size="large" color="#A50021" />
-        <Text style={{ marginTop: 12, color: "#666" }}>
-          Loading products...
-        </Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f3f3" }}>
+        <View style={{ paddingTop: insets.top + 10, paddingHorizontal: 12 }}>
+           {/* Header */}
+           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, paddingHorizontal: 4 }}>
+             <View>
+               <Skeleton width={120} height={16} style={{ marginBottom: 8 }} />
+               <Skeleton width={180} height={20} />
+             </View>
+             <Skeleton width={44} height={44} borderRadius={22} />
+           </View>
+           {/* Search */}
+           <Skeleton width="100%" height={50} borderRadius={25} style={{ marginBottom: 20 }} />
+           {/* Banner */}
+           <Skeleton width="100%" height={hp(24)} borderRadius={18} style={{ marginBottom: 24 }} />
+           {/* Categories */}
+           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+             {[1,2,3,4].map(i => (
+               <View key={i} style={{ alignItems: 'center' }}>
+                 <Skeleton width={moderateScale(48)} height={moderateScale(48)} borderRadius={24} style={{ marginBottom: 10 }} />
+                 <Skeleton width={50} height={10} />
+               </View>
+             ))}
+           </View>
+           {/* Products */}
+           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+             {[1,2,3,4].map(i => (
+               <View key={i} style={{ width: wp(42), backgroundColor: '#fff', borderRadius: 16, paddingBottom: 14, marginBottom: 16 }}>
+                 <Skeleton width="100%" height={hp(15)} />
+                 <View style={{ padding: 10 }}>
+                   <Skeleton width="60%" height={16} style={{ marginBottom: 6 }} />
+                   <Skeleton width="40%" height={12} />
+                 </View>
+               </View>
+             ))}
+           </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  const ProductCard = ({ product, width = 160 }) => (
+  const ProductCard = ({ product, width = wp(42) }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("Product", { product })}
       style={{
@@ -395,7 +422,7 @@ export default function HomeScreen({ navigation, route }) {
       <View style={{ position: "relative" }}>
         <Image
           source={{ uri: product.image }}
-          style={{ width: "100%", height: 130, backgroundColor: "#f9f9f9" }}
+          style={{ width: "100%", height: hp(15), backgroundColor: "#f9f9f9" }}
           resizeMode="contain"
         />
         {product.discount && (
@@ -470,12 +497,12 @@ export default function HomeScreen({ navigation, route }) {
           />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: BOTTOM_NAV_HEIGHT + insets.bottom + 24 }}
       >
         <View
           style={{
             backgroundColor: "#0a1f44",
-            paddingTop: 50,
+            paddingTop: insets.top + 10,
             paddingHorizontal: 16,
             paddingBottom: 16,
           }}
@@ -669,7 +696,7 @@ export default function HomeScreen({ navigation, route }) {
                 resizeMode="cover"
                 style={{
                   width: SCREEN_WIDTH - 24,
-                  height: 210,
+                  height: hp(24),
                   borderRadius: 18,
                 }}
               />
@@ -823,8 +850,8 @@ export default function HomeScreen({ navigation, route }) {
                   source={item.image}
                   resizeMode="contain"
                   style={{
-                    width: 52,
-                    height: 52,
+                    width: moderateScale(48),
+                    height: moderateScale(48),
                     marginBottom: 10,
                   }}
                 />
@@ -1046,7 +1073,7 @@ export default function HomeScreen({ navigation, route }) {
           onPress={() => navigation.navigate("Cart")}
           style={{
             position: "absolute",
-            bottom: 90,
+            bottom: BOTTOM_NAV_HEIGHT + insets.bottom + 20,
             left: 16,
             right: 16,
             backgroundColor: "#A50021",
@@ -1098,7 +1125,7 @@ export default function HomeScreen({ navigation, route }) {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             padding: 24,
-            paddingBottom: 42,
+            paddingBottom: insets.bottom + 16,
           }}
         >
           <View

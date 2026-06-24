@@ -27,6 +27,10 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Early wakeup ping: Fire-and-forget request to wake up Render free tier backend instantly
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
+fetch(`${API_URL}/api/products?page=1&limit=1`).catch(() => {});
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {

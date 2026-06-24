@@ -7,6 +7,8 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { moderateScale, hp } from '../utils/responsive';
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -20,6 +22,7 @@ GoogleSignin.configure({
 
 export default function WelcomeScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleGoogleSignIn = async () => {
     try {
@@ -80,19 +83,19 @@ export default function WelcomeScreen({ navigation }) {
         flex: 1,
         backgroundColor: "#A50021",
         paddingHorizontal: 28,
-        paddingTop: 70,
+        paddingTop: insets.top + 24,
         paddingBottom: 40,
       }}
     >
       <View style={{ alignItems: "center", marginTop: 10 }}>
         <Image
           source={require("../../assets/icon.png")}
-          style={{ width: 120, height: 120, borderRadius: 60 }}
+          style={{ width: moderateScale(110), height: moderateScale(110), borderRadius: moderateScale(55) }}
         />
         <Text
           style={{
             color: "#ffffff",
-            fontSize: 38,
+            fontSize: moderateScale(34),
             fontWeight: "bold",
             marginTop: 20,
             textAlign: "center",
@@ -103,7 +106,7 @@ export default function WelcomeScreen({ navigation }) {
         <Text
           style={{
             color: "#ffffffdd",
-            fontSize: 18,
+            fontSize: moderateScale(16),
             textAlign: "center",
             marginTop: 18,
             lineHeight: 30,
@@ -121,7 +124,7 @@ export default function WelcomeScreen({ navigation }) {
         disabled={loading}
         style={{
           backgroundColor: "#ffffff",
-          height: 65,
+          height: moderateScale(60),
           borderRadius: 20,
           justifyContent: "center",
           alignItems: "center",
@@ -134,7 +137,7 @@ export default function WelcomeScreen({ navigation }) {
         ) : (
           <>
             <Text
-              style={{ color: "#A50021", fontSize: 20, fontWeight: "bold" }}
+              style={{ color: "#A50021", fontSize: moderateScale(18), fontWeight: "bold" }}
             >
               Continue with Google
             </Text>

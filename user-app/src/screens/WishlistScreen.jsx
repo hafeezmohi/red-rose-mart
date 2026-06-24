@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { moderateScale, BOTTOM_NAV_HEIGHT } from '../utils/responsive';
 
 import BottomNav from '../components/BottomNav';
 
@@ -33,6 +36,8 @@ export default function WishlistScreen({
     const { addToCart } =
         useContext(CartContext);
 
+    const insets = useSafeAreaInsets();
+
     return (
         <SafeAreaView
             edges={["bottom"]}
@@ -46,9 +51,9 @@ export default function WishlistScreen({
                     false
                 }
                 contentContainerStyle={{
-                    paddingTop: 55,
+                    paddingTop: insets.top + 12,
                     paddingHorizontal: 20,
-                    paddingBottom: 140,
+                    paddingBottom: BOTTOM_NAV_HEIGHT + insets.bottom + 24,
                 }}
             >
                 <Text
@@ -128,8 +133,8 @@ export default function WishlistScreen({
                                     uri: product.image,
                                 }}
                                 style={{
-                                    width: 82,
-                                    height: 82,
+                                    width: moderateScale(76),
+                                    height: moderateScale(76),
                                     borderRadius: 16,
                                 }}
                             />
@@ -176,7 +181,7 @@ export default function WishlistScreen({
                                         borderRadius: 12,
                                         alignItems:
                                             'center',
-                                        width: 120,
+                                        width: moderateScale(115),
                                     }}
                                 >
                                     <Text

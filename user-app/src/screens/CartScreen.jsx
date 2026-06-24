@@ -1,13 +1,17 @@
 import { useContext } from 'react';
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { moderateScale, BOTTOM_NAV_HEIGHT } from '../utils/responsive';
 import BottomNav from '../components/BottomNav';
 import { CartContext } from '../context/CartContext';
+import Skeleton from '../components/Skeleton';
 
 const MIN_ORDER = 999;
 
 export default function CartScreen({ navigation, route }) {
-  const { cartItems, increaseQty, decreaseQty } = useContext(CartContext);
+  const insets = useSafeAreaInsets();
+  const { cartItems, increaseQty, decreaseQty, loading } = useContext(CartContext);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const deliveryFee = 0;
@@ -28,6 +32,25 @@ export default function CartScreen({ navigation, route }) {
       checkoutData: { cartItems, total },
     });
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: '#f7f3f3' }}>
+        <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 20 }}>Your Cart</Text>
+          {[1,2,3].map(i => (
+             <View key={i} style={{ flexDirection: 'row', backgroundColor: '#fff', padding: 12, borderRadius: 16, marginBottom: 16 }}>
+               <Skeleton width={moderateScale(58)} height={moderateScale(58)} borderRadius={12} />
+               <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
+                 <Skeleton width="70%" height={16} style={{ marginBottom: 8 }} />
+                 <Skeleton width="40%" height={14} />
+               </View>
+             </View>
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -102,9 +125,9 @@ export default function CartScreen({ navigation, route }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 52,
+          paddingTop: insets.top + 12,
           paddingHorizontal: 16,
-          paddingBottom: 150,
+          paddingBottom: BOTTOM_NAV_HEIGHT + insets.bottom + 80,
         }}
       >
         <View
@@ -143,8 +166,8 @@ export default function CartScreen({ navigation, route }) {
             <Image
               source={{ uri: item.image }}
               style={{
-                width: 62,
-                height: 62,
+                width: moderateScale(58),
+                height: moderateScale(58),
                 borderRadius: 14,
               }}
             />
