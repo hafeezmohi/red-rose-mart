@@ -1,15 +1,12 @@
-import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { sendError, sendSuccess } from "../utils/response.js";
+import { generateToken } from "../utils/jwt.js";
+import { sendEmail } from "../utils/email.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// helper — keeps token generation in one place
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
 
 // @desc    Google OAuth login
 // @route   POST /api/auth/google
@@ -50,6 +47,9 @@ export const googleAuth = async (req, res, next) => {
         authProvider: "google",
       });
     } else {
+      if (user.isBlocked) {
+        return sendError(res, 403, "Your account has been blocked by an administrator");
+      }
       if (!user.googleId) user.googleId = googleId;
       if (picture && user.avatar !== picture) user.avatar = picture;
       await user.save();
@@ -145,6 +145,98 @@ export const savePushToken = async (req, res, next) => {
     const { pushToken } = req.body;
     await User.findByIdAndUpdate(req.user._id, { pushToken });
     sendSuccess(res, 200, 'Push token saved');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Forgot admin details (send email)
+// @route   POST /api/auth/forgot-admin-details
+// @access  Public
+export const forgotAdminDetails = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return sendError(res, 400, "Email is required");
+
+    const user = await User.findOne({ email, role: "admin" });
+    if (!user) return sendError(res, 404, "Admin account not found");
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    
+    // Hash token before saving to database
+    user.resetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    user.resetTokenExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    await user.save();
+
+    // The reset URL points to the frontend Next.js app
+    const origin = req.headers.origin || "http://localhost:3000";
+    const resetUrl = `${origin}/reset-details?token=${resetToken}`;
+
+    const message = `You requested to change your admin details.\n\nPlease click on the link below to securely change your Email ID or Password:\n\n${resetUrl}\n\nThis link is valid for 10 minutes. If you did not request this, please ignore this email.`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Red Rose Mart - Admin Details Reset",
+        message,
+      });
+
+      sendSuccess(res, 200, "Reset link sent to email");
+    } catch (err) {
+      user.resetToken = undefined;
+      user.resetTokenExpire = undefined;
+      await user.save();
+      console.error("Email error:", err);
+      return sendError(res, 500, "Email could not be sent");
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Reset admin details
+// @route   POST /api/auth/reset-admin-details
+// @access  Public
+export const resetAdminDetails = async (req, res, next) => {
+  try {
+    const { token, newEmail, newPassword } = req.body;
+
+    if (!token) return sendError(res, 400, "Token is required");
+    if (!newEmail && !newPassword) return sendError(res, 400, "Please provide a new email or password");
+
+    // Get hashed token to compare with database
+    const resetPasswordToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetToken: resetPasswordToken,
+      resetTokenExpire: { $gt: Date.now() },
+      role: "admin",
+    });
+
+    if (!user) {
+      return sendError(res, 400, "Invalid or expired reset token");
+    }
+
+    if (newEmail) {
+      const emailExists = await User.findOne({ email: newEmail });
+      if (emailExists && emailExists._id.toString() !== user._id.toString()) {
+        return sendError(res, 400, "Email is already in use by another account");
+      }
+      user.email = newEmail;
+    }
+
+    if (newPassword) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    // Clear token fields
+    user.resetToken = undefined;
+    user.resetTokenExpire = undefined;
+    await user.save();
+
+    sendSuccess(res, 200, "Admin details updated successfully. Please login again.");
   } catch (err) {
     next(err);
   }

@@ -46,19 +46,14 @@ export const placeOrder = async (req, res, next) => {
         );
       }
 
-      if (product.stock < item.quantity) {
-        return sendError(
-          res,
-          400,
-          `Only ${product.stock} units of ${product.name} in stock`,
-        );
-      }
+
 
       orderItems.push({
         product: product._id,
         name: product.name,
         image: product.images?.[0] || "",
         price: product.discountPrice || product.price,
+        originalPrice: product.price,
         quantity: item.quantity,
       });
     }
@@ -80,11 +75,7 @@ export const placeOrder = async (req, res, next) => {
       paymentMethod: "COD",
     });
 
-    for (const item of cart.items) {
-      await Product.findByIdAndUpdate(item.product._id, {
-        $inc: { stock: -item.quantity },
-      });
-    }
+
 
     cart.items = [];
     await cart.save();
@@ -119,12 +110,15 @@ export const getMyOrders = async (req, res, next) => {
 // ─────────────────────────────────────────────
 export const getOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id).populate("user", "name email phone");
+    const order = await Order.findById(req.params.id)
+      .populate("user", "name email phone")
+      .populate("items.product", "price discountPrice");
 
     if (!order) return sendError(res, 404, "Order not found");
 
+    const orderUserId = order.user?._id ? order.user._id.toString() : order.user?.toString();
     if (
-      order.user.toString() !== req.user._id.toString() &&
+      orderUserId !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
       return sendError(res, 403, "Not authorized");
@@ -155,11 +149,7 @@ export const cancelOrder = async (req, res, next) => {
       return sendError(res, 400, "Order cannot be cancelled at this stage");
     }
 
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: item.quantity },
-      });
-    }
+
 
     order.orderStatus = "cancelled";
     order.cancelledAt = new Date();
@@ -305,6 +295,7 @@ export const updateOrderStatus = async (req, res, next) => {
       "preparing",
       "out_for_delivery",
       "delivered",
+      "cancelled",
     ];
     if (!validStatuses.includes(status))
       return sendError(res, 400, "Invalid status");
@@ -324,6 +315,12 @@ export const updateOrderStatus = async (req, res, next) => {
     if (status === "delivered") {
       order.deliveredAt = new Date();
       order.paymentStatus = "paid";
+      order.deliveryOtp = null;
+    }
+
+    if (status === "cancelled") {
+      order.cancelledAt = new Date();
+      order.cancellationReason = req.body.reason || "Cancelled by admin";
       order.deliveryOtp = null;
     }
 

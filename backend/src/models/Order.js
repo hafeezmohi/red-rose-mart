@@ -9,6 +9,7 @@ const orderItemSchema = new mongoose.Schema({
   name: { type: String, required: true }, // snapshot at time of order
   image: { type: String }, // snapshot
   price: { type: Number, required: true }, // snapshot
+  originalPrice: { type: Number }, // snapshot of MRP
   quantity: { type: Number, required: true },
 });
 
@@ -41,7 +42,7 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: ["placed", "out_for_delivery", "delivered", "cancelled"],
+      enum: ["placed", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
       default: "placed",
     },
 

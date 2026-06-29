@@ -6,7 +6,6 @@ import Navbar from "../components/Navbar";
 import toast from "react-hot-toast";
 
 import {
-  TrendingUp,
   DollarSign,
   ShoppingBag,
   Users,
@@ -28,7 +27,7 @@ import {
   Bar,
 } from "recharts";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.55.36.201:5000";
+import { API_URL } from "../../config";
 
 function fmt(n) {
   if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;

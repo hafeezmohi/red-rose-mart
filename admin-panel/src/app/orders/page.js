@@ -7,7 +7,7 @@ import { Search, X } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_URL } from "../../config";
 
 const STATUS_TABS = [
   { key: "placed",           label: "Pending",          color: "text-yellow-600", bg: "bg-yellow-100" },
@@ -15,19 +15,7 @@ const STATUS_TABS = [
   { key: "delivered",        label: "Delivered",         color: "text-green-600",  bg: "bg-green-100"  },
 ];
 
-const STATUS_COLORS = {
-  placed:           "bg-yellow-100 text-yellow-700",
-  out_for_delivery: "bg-blue-100 text-blue-700",
-  delivered:        "bg-green-100 text-green-700",
-  cancelled:        "bg-red-100 text-red-700",
-};
-
-const STATUS_LABELS = {
-  placed:           "Pending",
-  out_for_delivery: "Out for Delivery",
-  delivered:        "Delivered",
-  cancelled:        "Cancelled",
-};
+import { STATUS_COLORS, STATUS_LABELS } from "../../constants";
 
 export default function OrdersPage() {
   const router = useRouter();

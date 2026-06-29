@@ -119,9 +119,13 @@ export const updateProduct = async (req, res, next) => {
 // @access  Admin
 export const deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) return sendError(res, 404, "Product not found");
-    sendSuccess(res, 200, "Product deleted permanently");
+    
+    product.isActive = false;
+    await product.save();
+    
+    sendSuccess(res, 200, "Product soft-deleted (set to inactive)");
   } catch (err) {
     next(err);
   }

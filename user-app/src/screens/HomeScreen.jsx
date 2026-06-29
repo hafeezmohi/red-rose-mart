@@ -21,6 +21,7 @@ import BottomNav from "../components/BottomNav";
 import Skeleton from '../components/Skeleton';
 import { CartContext } from "../context/CartContext";
 import { AddressContext } from "../context/AddressContext";
+import ProductCard from "../components/ProductCard";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
@@ -72,62 +73,7 @@ const PAGE_SIZE = 40;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-const CATEGORY_GRID = [
-  {
-    id: "fruits-vegetables",
-    name: "Fruits & Vegetables",
-    iconLib: "ion",
-    icon: "leaf-outline",
-  },
-  {
-    id: "dairy-eggs",
-    name: "Dairy & Eggs",
-    iconLib: "ion",
-    icon: "egg-outline",
-  },
-  {
-    id: "rice-grains",
-    name: "Rice & Grains",
-    iconLib: "ion",
-    icon: "nutrition-outline",
-  },
-  { id: "snacks", name: "Snacks", iconLib: "ion", icon: "fast-food-outline" },
-  { id: "beverages", name: "Beverages", iconLib: "ion", icon: "cafe-outline" },
-  {
-    id: "personal-care",
-    name: "Personal Care",
-    iconLib: "ion",
-    icon: "body-outline",
-  },
-  { id: "haircare", name: "Haircare", iconLib: "ion", icon: "cut-outline" },
-  { id: "household", name: "Household", iconLib: "ion", icon: "home-outline" },
-  { id: "frozen", name: "Frozen", iconLib: "ion", icon: "snow-outline" },
-  { id: "other", name: "Other", iconLib: "ion", icon: "cube-outline" },
-  {
-    id: "instant-foods",
-    name: "Instant Foods",
-    iconLib: "ion",
-    icon: "fast-food-outline",
-  },
-  {
-    id: "oil-masala",
-    name: "Oil & Masala",
-    iconLib: "ion",
-    icon: "restaurant-outline",
-  },
-  {
-    id: "beauty-hygiene",
-    name: "Beauty & Hygiene",
-    iconLib: "ion",
-    icon: "sparkles-outline",
-  },
-  {
-    id: "offers",
-    name: "Special Offers",
-    iconLib: "ion",
-    icon: "pricetag-outline",
-  },
-];
+const CATEGORY_GRID = categories.filter(c => c.id !== "all").map(c => ({ ...c, iconLib: "ion" }));
 
 const CategoryIcon = ({ item, size = 28, color = "#A50021" }) => {
   if (item.iconLib === "mci") {
@@ -161,7 +107,7 @@ export default function HomeScreen({ navigation, route }) {
   const [appliedMax, setAppliedMax] = useState("");
   const [appliedSort, setAppliedSort] = useState("none");
 
-  const { cartItems, addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, increaseQty, decreaseQty } = useContext(CartContext);
   const { selectedAddress } = useContext(AddressContext);
 
   const bannerScrollRef = useRef(null);
@@ -303,7 +249,6 @@ export default function HomeScreen({ navigation, route }) {
     reviews: p.ratings?.count || 0,
     category: categories.find((c) => c.id === p.category)?.name || p.category,
     unit: p.unit,
-    stock: p.stock,
     discount: p.discountPrice
       ? Math.round(((p.price - p.discountPrice) / p.price) * 100)
       : null,
@@ -400,89 +345,6 @@ export default function HomeScreen({ navigation, route }) {
     );
   }
 
-  const ProductCard = ({ product, width = wp(42) }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("Product", { product })}
-      style={{
-        width,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        marginRight: 12,
-        marginBottom: 1,
-
-        paddingBottom: 14,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-        elevation: 2,
-        overflow: "hidden",
-      }}
-    >
-      <View style={{ position: "relative" }}>
-        <Image
-          source={{ uri: product.image }}
-          style={{ width: "100%", height: hp(15), backgroundColor: "#f9f9f9" }}
-          resizeMode="contain"
-        />
-        {product.discount && (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              backgroundColor: "#A50021",
-              paddingHorizontal: 7,
-              paddingVertical: 3,
-              borderBottomRightRadius: 8,
-            }}
-          >
-            <Text style={{ color: "#fff", fontSize: 11, fontWeight: "bold" }}>
-              {product.discount}%{"\n"}OFF
-            </Text>
-          </View>
-        )}
-      </View>
-      <View style={{ paddingHorizontal: 10, paddingTop: 8 }}>
-        <Text style={{ color: "#A50021", fontWeight: "bold", fontSize: 15 }}>
-          ₹ {product.price}.00
-        </Text>
-        {product.originalPrice && (
-          <Text
-            style={{
-              color: "#999",
-              fontSize: 11,
-              textDecorationLine: "line-through",
-            }}
-          >
-            ₹{product.originalPrice}.00
-          </Text>
-        )}
-        <Text
-          numberOfLines={1}
-          style={{ fontSize: 12, color: "#333", marginTop: 2 }}
-        >
-          {product.name}
-        </Text>
-
-        <TouchableOpacity
-          onPress={() => addToCart(product)}
-          style={{
-            backgroundColor: "#f4c400",
-            marginTop: 8,
-            borderRadius: 20,
-            marginHorizontal: 6,
-            paddingVertical: 7,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#1a1a1a", fontWeight: "700", fontSize: 12 }}>
-            Add To Cart
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: "#f5f5f5" }}>

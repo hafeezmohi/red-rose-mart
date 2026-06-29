@@ -33,7 +33,7 @@ const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.label]));
 
 const EMPTY_FORM = {
     name: "", category: "", price: "", discountPrice: "",
-    unit: "", stock: "", lowStockThreshold: "10",
+    unit: "",
     isFeatured: false, isActive: true, images: [],
 };
 
@@ -43,13 +43,7 @@ function authHeaders() {
     return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 }
 
-function stockBadge(product) {
-    if (product.stock === 0)
-        return <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-600">Out of Stock</span>;
-    if (product.stock <= (product.lowStockThreshold ?? 10))
-        return <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700">{product.stock} Low</span>;
-    return <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-green-100 text-green-700">{product.stock} In Stock</span>;
-}
+
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonRow() {
@@ -136,7 +130,6 @@ function ProductForm({ initial, onSave, onCancel, saving }) {
         if (!form.category)        return toast.error("Category is required");
         if (!form.price)           return toast.error("Price is required");
         if (!form.unit.trim())     return toast.error("Unit is required");
-        if (form.stock === "")     return toast.error("Stock is required");
         onSave(form);
     };
 
@@ -165,7 +158,7 @@ function ProductForm({ initial, onSave, onCancel, saving }) {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                     <label className="text-xs font-semibold text-gray-600 mb-1 block">Price (₹) *</label>
                     <input type="number" placeholder="90" value={form.price}
@@ -181,20 +174,10 @@ function ProductForm({ initial, onSave, onCancel, saving }) {
                     <input type="text" placeholder="500g / 1kg / pack" value={form.unit}
                         onChange={e => set("unit", e.target.value)} className={inputCls} />
                 </div>
-                <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1 block">Stock *</label>
-                    <input type="number" placeholder="80" value={form.stock}
-                        onChange={e => set("stock", e.target.value)} className={inputCls} />
-                </div>
             </div>
 
             {/* Row 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1 block">Low Stock Threshold</label>
-                    <input type="number" placeholder="10" value={form.lowStockThreshold}
-                        onChange={e => set("lowStockThreshold", e.target.value)} className={inputCls} />
-                </div>
+            <div className="grid grid-cols-1 gap-4 items-end">
                 <div className="flex gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={form.isFeatured}
@@ -243,8 +226,7 @@ function EditModal({ product, onClose, onUpdated }) {
                 name: form.name, category: form.category,
                 price: Number(form.price),
                 discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
-                unit: form.unit, stock: Number(form.stock),
-                lowStockThreshold: Number(form.lowStockThreshold) || 10,
+                unit: form.unit,
                 isFeatured: form.isFeatured, isActive: form.isActive,
                 images: form.images,
             };
@@ -264,8 +246,7 @@ function EditModal({ product, onClose, onUpdated }) {
         _id: product._id,
         name: product.name, category: product.category,
         price: product.price ?? "", discountPrice: product.discountPrice ?? "",
-        unit: product.unit ?? "", stock: product.stock ?? "",
-        lowStockThreshold: product.lowStockThreshold ?? 10,
+        unit: product.unit ?? "",
         isFeatured: product.isFeatured ?? false,
         isActive: product.isActive ?? true,
         images: product.images ?? [],
@@ -348,8 +329,7 @@ export default function ProductsPage() {
                 name: form.name, category: form.category,
                 price: Number(form.price),
                 ...(form.discountPrice && { discountPrice: Number(form.discountPrice) }),
-                unit: form.unit, stock: Number(form.stock),
-                lowStockThreshold: Number(form.lowStockThreshold) || 10,
+                unit: form.unit,
                 isFeatured: form.isFeatured, isActive: form.isActive,
                 images: form.images,
             };
@@ -400,8 +380,6 @@ export default function ProductsPage() {
     const clearFilters = () => { setSearch(""); setCatFilter(""); setFeatFilter(""); setActFilter(""); };
     const hasFilters   = search || catFilter || featFilter || actFilter;
 
-    const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= (p.lowStockThreshold ?? 10)).length;
-    const outOfStock    = products.filter(p => p.stock === 0).length;
     const featuredCount = products.filter(p => p.isFeatured).length;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -430,11 +408,9 @@ export default function ProductsPage() {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div className="grid grid-cols-2 gap-3 mb-6">
                         {[
                             { label: "Total",      value: total,        color: "text-black"        },
-                            { label: "Low Stock",  value: lowStockCount, color: "text-yellow-600"  },
-                            { label: "Out of Stock", value: outOfStock,  color: "text-red-500"     },
                             { label: "Featured",   value: featuredCount, color: "text-purple-600"  },
                         ].map(s => (
                             <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
@@ -520,7 +496,6 @@ export default function ProductsPage() {
                                         <th className="p-4 font-semibold">Product</th>
                                         <th className="p-4 font-semibold">Category</th>
                                         <th className="p-4 font-semibold">Price</th>
-                                        <th className="p-4 font-semibold">Stock</th>
                                         <th className="p-4 font-semibold">Flags</th>
                                         <th className="p-4 font-semibold">Actions</th>
                                     </tr>
@@ -554,8 +529,6 @@ export default function ProductsPage() {
                                                     <p className="font-semibold text-black text-sm">₹{product.price}</p>
                                                     {product.discountPrice && <p className="text-xs text-green-600">₹{product.discountPrice} offer</p>}
                                                 </td>
-                                                {/* Stock */}
-                                                <td className="p-4">{stockBadge(product)}</td>
                                                 {/* Flags */}
                                                 <td className="p-4">
                                                     <div className="flex gap-1.5 flex-wrap">
@@ -620,7 +593,6 @@ export default function ProductsPage() {
                                     </div>
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex gap-1.5 flex-wrap">
-                                            {stockBadge(product)}
                                             {product.isFeatured && (
                                                 <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-semibold">
                                                     <Star size={10} fill="currentColor" /> Featured

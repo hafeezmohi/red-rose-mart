@@ -3,9 +3,10 @@ import { NextResponse } from "next/server";
 export function middleware(request) {
   const token = request.cookies.get("admin-token")?.value;
   const isLoginPage = request.nextUrl.pathname === "/login";
+  const isResetPage = request.nextUrl.pathname === "/reset-details";
 
-  // If no token and not on login page → redirect to login
-  if (!token && !isLoginPage) {
+  // If no token and not on a public page → redirect to login
+  if (!token && !isLoginPage && !isResetPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

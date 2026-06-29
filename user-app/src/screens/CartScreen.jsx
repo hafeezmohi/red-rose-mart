@@ -196,49 +196,17 @@ export default function CartScreen({ navigation, route }) {
               </Text>
             </View>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#A50021',
-                borderRadius: 10,
-                paddingHorizontal: 8,
-                paddingVertical: 6,
-              }}
-            >
-              <TouchableOpacity onPress={() => decreaseQty(item.id)}>
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  -
-                </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => decreaseQty(item.id)} style={{ width: 32, height: 32, backgroundColor: '#f5f5f5', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1a1a1a' }}>-</Text>
               </TouchableOpacity>
-
-              <Text
-                style={{
-                  color: '#ffffff',
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                  marginHorizontal: 12,
-                }}
-              >
+              
+              <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold', marginHorizontal: 14 }}>
                 {item.qty}
               </Text>
-
-              <TouchableOpacity onPress={() => increaseQty(item.id)}>
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  +
-                </Text>
+              
+              <TouchableOpacity onPress={() => increaseQty(item.id)} style={{ width: 32, height: 32, backgroundColor: '#A50021', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>+</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { generateToken } from "../utils/jwt.js";
 import User from "../models/User.js";
 import { sendError, sendSuccess } from "../utils/response.js";
 import Product from "../models/Product.js";
@@ -19,9 +19,7 @@ export const adminLogin = async (req, res, next) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return sendError(res, 401, "Invalid credentials");
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = generateToken(user._id);
 
     sendSuccess(res, 200, "Login successful", {
       token,

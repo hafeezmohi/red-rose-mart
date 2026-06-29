@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { moderateScale } from '../utils/responsive';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
+import { useLocation } from "../hooks/useLocation";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
@@ -24,101 +25,26 @@ export default function CompleteProfileScreen({ navigation }) {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [coordinates, setCoordinates] = useState(null);
-  const [locationLoading, setLocationLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [locationVerified, setLocationVerified] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const isKagaznagarAddress = (text = "") => {
-    const value = text.toLowerCase();
+  const {
+    loading: locationLoading,
+    detectLocation,
+    isKagaznagarAddress
+  } = useLocation();
 
-    return (
-      value.includes("kagaznagar") ||
-      value.includes("kaghaznagar") ||
-      value.includes("asifabad") ||
-      value.includes("komaram bheem") ||
-      value.includes("adilabad")
-    );
-  };
-
-  const detectLocation = async () => {
-    try {
-      setLocationLoading(true);
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "Please allow location access to continue.",
-        );
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      const { latitude, longitude } = location.coords;
-      setCoordinates({ lat: latitude, lng: longitude });
-
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude,
-      });
-
-      if (geocode.length > 0) {
-        const place = geocode[0];
-
-        const formatted = [
-          place.name,
-          place.street,
-          place.district,
-          place.city,
-          place.region,
-          place.postalCode,
-        ]
-          .filter(Boolean)
-          .join(", ");
-
-        const city = (place.city || "").toLowerCase();
-        const district = (place.district || "").toLowerCase();
-        const region = (place.region || "").toLowerCase();
-        const formattedLower = formatted.toLowerCase();
-
-        const isKagaznagar =
-          city.includes("kagaznagar") ||
-          district.includes("kagaznagar") ||
-          formattedLower.includes("kagaznagar");
-
-        if (!isKagaznagar) {
-          setAddress("");
-          setCoordinates(null);
-
-          setLocationVerified(false);
-          Alert.alert(
-            "Not Deliverable",
-            "Sorry, we deliver only in Kagaznagar, Telangana.",
-          );
-          return;
-        }
-
-        setAddress(formatted);
-        setLocationVerified(true);
-
-        // Location verified successfully
-        // No popup needed
-      } else {
-        Alert.alert(
-          "Not Deliverable",
-          "Unable to verify location. Please enter a Kagaznagar address manually.",
-        );
-      }
-    } catch (error) {
+  const handleDetectLocation = async () => {
+    const result = await detectLocation();
+    if (result) {
+      setCoordinates({ lat: result.lat, lng: result.lng });
+      setAddress(result.formatted);
+      setLocationVerified(true);
+    } else {
+      setCoordinates(null);
+      setAddress("");
       setLocationVerified(false);
-      Alert.alert("Error", "Failed to get location. Please enter manually.");
-      console.error(error);
-    } finally {
-      setLocationLoading(false);
     }
   };
 
@@ -309,7 +235,7 @@ export default function CompleteProfileScreen({ navigation }) {
 
           {/* Auto detect button */}
           <TouchableOpacity
-            onPress={detectLocation}
+            onPress={handleDetectLocation}
             disabled={locationLoading || locationVerified}
             style={{
               backgroundColor: locationVerified ? "#E8F5E9" : "#fff5f5",

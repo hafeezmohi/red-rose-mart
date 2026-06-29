@@ -31,9 +31,6 @@ const productSchema = new mongoose.Schema(
     discountPrice: { type: Number }, // sale price if any
 
     unit: { type: String, required: true }, // "kg", "500g", "1L", "piece" etc
-    stock: { type: Number, required: true, default: 0 },
-    lowStockThreshold: { type: Number, default: 10 }, // warn when stock < this
-
     isFeatured: { type: Boolean, default: false }, // for homepage banners
     isActive: { type: Boolean, default: true }, // soft delete
 
@@ -45,10 +42,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// virtual — is stock low?
-productSchema.virtual("isLowStock").get(function () {
-  return this.stock <= this.lowStockThreshold;
-});
 
 // virtual — final price (discount or regular)
 productSchema.virtual("finalPrice").get(function () {

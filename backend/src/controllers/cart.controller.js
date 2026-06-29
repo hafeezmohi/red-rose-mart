@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import { sendError, sendSuccess } from "../utils/response.js";
 
 const populateCart = (query) =>
-  query.populate("items.product", "name images price discountPrice unit stock isActive");
+  query.populate("items.product", "name images price discountPrice unit isActive");
 
 // @desc    Get user cart
 // @route   GET /api/cart
@@ -37,10 +37,6 @@ export const addToCart = async (req, res, next) => {
       return sendError(res, 404, "Product not found");
     }
 
-    // check stock
-    if (product.stock < quantity) {
-      return sendError(res, 400, `Only ${product.stock} items in stock`);
-    }
 
     let cart = await Cart.findOne({ user: req.user._id });
 
@@ -55,10 +51,6 @@ export const addToCart = async (req, res, next) => {
       );
 
       if (existingItem) {
-        // check stock for updated quantity
-        if (product.stock < existingItem.quantity + quantity) {
-          return sendError(res, 400, `Only ${product.stock} items in stock`);
-        }
         existingItem.quantity += quantity;
       } else {
         cart.items.push({ product: productId, quantity });
@@ -67,7 +59,7 @@ export const addToCart = async (req, res, next) => {
       await cart.save();
     }
 
-    cart = await populateCart(Cart.findById(cart._id));
+    await cart.populate("items.product", "name images price discountPrice unit isActive");
     sendSuccess(res, 200, "Item added to cart", { cart });
   } catch (err) {
     next(err);
@@ -86,13 +78,8 @@ export const updateCartItem = async (req, res, next) => {
       return sendError(res, 400, "Quantity must be at least 1");
     }
 
-    // check stock
     const product = await Product.findById(productId);
     if (!product) return sendError(res, 404, "Product not found");
-    if (product.stock < quantity) {
-      return sendError(res, 400, `Only ${product.stock} items in stock`);
-    }
-
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) return sendError(res, 404, "Cart not found");
 
@@ -104,8 +91,8 @@ export const updateCartItem = async (req, res, next) => {
     item.quantity = quantity;
     await cart.save();
 
-    const updatedCart = await populateCart(Cart.findById(cart._id));
-    sendSuccess(res, 200, "Cart updated", { cart: updatedCart });
+    await cart.populate("items.product", "name images price discountPrice unit isActive");
+    sendSuccess(res, 200, "Cart updated", { cart });
   } catch (err) {
     next(err);
   }
@@ -124,8 +111,8 @@ export const removeFromCart = async (req, res, next) => {
     );
     await cart.save();
 
-    const updatedCart = await populateCart(Cart.findById(cart._id));
-    sendSuccess(res, 200, "Item removed", { cart: updatedCart });
+    await cart.populate("items.product", "name images price discountPrice unit isActive");
+    sendSuccess(res, 200, "Item removed", { cart });
   } catch (err) {
     next(err);
   }

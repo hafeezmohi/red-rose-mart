@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '../utils/jwt.js';
 import User from '../models/User.js';
 import { sendError } from '../utils/response.js';
 
@@ -11,10 +11,11 @@ export const protect = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token);
 
     const user = await User.findById(decoded.id).select('-__v');
     if (!user) return sendError(res, 401, 'User no longer exists');
+    if (user.isBlocked) return sendError(res, 403, 'Your account has been blocked');
 
     req.user = user;
     next();

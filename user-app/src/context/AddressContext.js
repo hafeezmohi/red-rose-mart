@@ -40,29 +40,10 @@ export const AddressProvider = ({
             }
         };
 
-    const saveAddress =
-        async (address) => {
-            try {
-                setSelectedAddress(
-                    address
-                );
-
-                await AsyncStorage.setItem(
-                    'selectedAddress',
-                    JSON.stringify(
-                        address
-                    )
-                );
-            } catch (error) {
-                // Error
-            }
-        };
-
     return (
         <AddressContext.Provider
             value={{
                 selectedAddress,
-                saveAddress,
             }}
         >
             {children}

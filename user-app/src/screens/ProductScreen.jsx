@@ -8,10 +8,12 @@ import {
   StatusBar,
   TextInput,
   Linking,
+  Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { wp, hp, moderateScale } from '../utils/responsive';
+import Skeleton from "../components/Skeleton";
 
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,23 +23,26 @@ import { FavoritesContext } from "../context/FavoritesContext";
 import { AddressContext } from "../context/AddressContext";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
+import ProductCard from "../components/ProductCard";
 
 export default function ProductScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { product } = route.params;
 
-  const { addToCart, cartItems } = useContext(CartContext);
-
+  const { addToCart, cartItems, increaseQty, decreaseQty } = useContext(CartContext);
   const { toggleFavorite, isFavorite } = useContext(FavoritesContext);
-
   const { selectedAddress } = useContext(AddressContext);
 
   const [related, setRelated] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [inCart, setInCart] = useState(false);
   const [user, setUser] = useState(null);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  const liked = isFavorite(product.id);
+  const liked = isFavorite(product.id || product._id);
+  const cartItem = cartItems.find((i) => i.id === (product.id || product._id));
+  const inCart = !!cartItem;
 
   const discount = product.originalPrice
     ? Math.round(
@@ -47,10 +52,6 @@ export default function ProductScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchRelated();
-
-    const cartItem = cartItems.find((i) => i.id === product.id);
-
-    if (cartItem) setInCart(true);
   }, [product]);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function ProductScreen({ route, navigation }) {
 
   const fetchRelated = async () => {
     try {
+      setLoadingRelated(true);
       const res = await fetch(
         `${API_URL}/api/products?category=${product.category}&limit=10`,
       );
@@ -79,7 +81,7 @@ export default function ProductScreen({ route, navigation }) {
 
       if (data.success) {
         const filtered = data.products
-          .filter((p) => p._id !== product.id)
+          .filter((p) => p._id !== product.id && p._id !== product._id)
           .map((p) => ({
             id: p._id,
             name: p.name,
@@ -94,22 +96,20 @@ export default function ProductScreen({ route, navigation }) {
             reviews: p.ratings?.count || 0,
             category: p.category,
             unit: p.unit,
-            stock: p.stock,
           }));
 
         setRelated(filtered);
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingRelated(false);
     }
   };
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
 
-    setInCart(true);
+  const handleAddToCart = () => {
+    addToCart(product);
   };
 
   const displayAddress =
@@ -268,6 +268,7 @@ export default function ProductScreen({ route, navigation }) {
             </View>
           )}
 
+
           {/* WISHLIST */}
           <TouchableOpacity
             onPress={() => toggleFavorite(product)}
@@ -295,14 +296,48 @@ export default function ProductScreen({ route, navigation }) {
             />
           </TouchableOpacity>
 
-          <Image
-            source={{ uri: product.image }}
-            style={{
-              width: wp(65),
-              height: hp(28),
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              setActiveImageIndex(Math.round(x / wp(80)));
             }}
-            resizeMode="contain"
-          />
+            scrollEventThrottle={16}
+            style={{ width: wp(80) }}
+          >
+            {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, idx) => (
+              <View key={idx} style={{ width: wp(80), alignItems: 'center' }}>
+                <Image
+                  source={{ uri: img }}
+                  style={{
+                    width: wp(65),
+                    height: hp(28),
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* DOTS */}
+          {(product.images && product.images.length > 1) && (
+            <View style={{ flexDirection: 'row', marginTop: 12 }}>
+              {product.images.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: activeImageIndex === idx ? '#A50021' : '#ddd',
+                    marginHorizontal: 4
+                  }}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
         {/* PRODUCT DETAILS */}
@@ -375,148 +410,10 @@ export default function ProductScreen({ route, navigation }) {
             )}
           </View>
 
-          {/* RATING */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginTop: 14,
-            }}
-          >
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Ionicons
-                key={i}
-                name={i <= Math.round(product.rating) ? "star" : "star-outline"}
-                size={16}
-                color="#f5a623"
-                style={{ marginRight: 2 }}
-              />
-            ))}
 
-            <Text
-              style={{
-                marginLeft: 8,
-                color: "#777",
-                fontSize: 13,
-                fontWeight: "500",
-              }}
-            >
-              {product.reviews || 0} reviews
-            </Text>
-          </View>
 
-          {/* STOCK */}
-          <View
-            style={{
-              marginTop: 18,
-              alignSelf: "flex-start",
-              backgroundColor: product.stock > 0 ? "#e8f5e9" : "#f5f5f5",
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-              borderRadius: 30,
-            }}
-          >
-            <Text
-              style={{
-                color: product.stock > 0 ? "#2e7d32" : "#888",
-                fontWeight: "700",
-                fontSize: 13,
-              }}
-            >
-              {product.stock > 0 ? "In Stock" : "Out of Stock"}
-            </Text>
-          </View>
 
-          {/* QUANTITY */}
-          <View
-            style={{
-              marginTop: 28,
-            }}
-          >
-            <Text
-              style={{
-                color: "#333",
-                fontWeight: "700",
-                marginBottom: 12,
-                fontSize: 15,
-              }}
-            >
-              Quantity
-            </Text>
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                style={{
-                  width: moderateScale(44),
-                  height: moderateScale(44),
-                  borderRadius: 14,
-                  backgroundColor: "#A50021",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 22,
-                    fontWeight: "bold",
-                  }}
-                >
-                  −
-                </Text>
-              </TouchableOpacity>
-
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  minWidth: moderateScale(56),
-                  height: moderateScale(44),
-                  borderRadius: 14,
-                  backgroundColor: "#f7f7f7",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "700",
-                    color: "#111",
-                  }}
-                >
-                  {quantity}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => setQuantity((q) => q + 1)}
-                style={{
-                  width: moderateScale(44),
-                  height: moderateScale(44),
-                  borderRadius: 14,
-                  backgroundColor: "#A50021",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 22,
-                    fontWeight: "bold",
-                  }}
-                >
-                  +
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
 
         {/* DESCRIPTION */}
@@ -541,14 +438,22 @@ export default function ProductScreen({ route, navigation }) {
           </Text>
 
           <Text
+            numberOfLines={isDescExpanded ? undefined : 3}
             style={{
               color: "#555",
               lineHeight: 24,
             }}
           >
-            Premium quality grocery product freshly packed for fast delivery.
-            Carefully selected for freshness and quality.
+            {product.description || "Premium quality grocery product freshly packed for fast delivery. Carefully selected for freshness and quality."}
           </Text>
+          
+          {(product.description || "Premium quality grocery product freshly packed for fast delivery. Carefully selected for freshness and quality.").length > 120 && (
+            <TouchableOpacity onPress={() => setIsDescExpanded(!isDescExpanded)}>
+              <Text style={{ color: "#A50021", fontWeight: "bold", marginTop: 8 }}>
+                {isDescExpanded ? "Show Less" : "Read More"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* RELATED PRODUCTS */}
@@ -578,57 +483,20 @@ export default function ProductScreen({ route, navigation }) {
                 paddingLeft: 14,
               }}
             >
-              {related.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() =>
-                    navigation.push("Product", {
-                      product: item,
-                    })
-                  }
-                  style={{
-                    width: wp(40),
-                    backgroundColor: "#fff",
-                    borderRadius: 12,
-                    marginRight: 14,
-                    overflow: "hidden",
-                    elevation: 1,
-                  }}
-                >
-                  <Image
-                    source={{ uri: item.image }}
-                    style={{
-                      width: "100%",
-                      height: hp(14),
-                      backgroundColor: "#f9f9f9",
-                    }}
-                    resizeMode="contain"
-                  />
-
-                  <View style={{ padding: 10 }}>
-                    <Text
-                      style={{
-                        color: "#A50021",
-                        fontWeight: "bold",
-                        fontSize: 15,
-                      }}
-                    >
-                      ₹{item.price}
-                    </Text>
-
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        color: "#333",
-                        marginTop: 4,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {item.name}
-                    </Text>
+              {loadingRelated ? (
+                [1, 2, 3].map((i) => (
+                  <View key={`skeleton-${i}`} style={{ width: wp(40), backgroundColor: "#fff", borderRadius: 12, marginRight: 14, overflow: "hidden", elevation: 1 }}>
+                    <Skeleton width="100%" height={hp(14)} />
+                    <View style={{ padding: 10 }}>
+                      <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />
+                      <Skeleton width="40%" height={12} />
+                    </View>
                   </View>
-                </TouchableOpacity>
-              ))}
+                ))
+              ) : (
+                related.map((item, index) => (
+                  <ProductCard key={`${item.id}-${index}`} product={item} width={wp(40)} />
+              )))}
             </ScrollView>
           </View>
         )}
@@ -647,28 +515,38 @@ export default function ProductScreen({ route, navigation }) {
           borderTopColor: "#eee",
         }}
       >
-        <TouchableOpacity
-          onPress={() =>
-            inCart ? navigation.navigate("Cart") : handleAddToCart()
-          }
-          style={{
-            flex: 1,
-            height: 58,
-            justifyContent: "center",
-            alignItems: "center",
-            borderRightWidth: 1,
-            borderRightColor: "#eee",
-          }}
-        >
-          <Text
+        {inCart ? (
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', borderRightWidth: 1, borderRightColor: '#eee' }}>
+            <TouchableOpacity onPress={() => decreaseQty(cartItem.id)} style={{ width: 44, height: 44, backgroundColor: '#f5f5f5', borderRadius: 22, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1a1a1a' }}>-</Text>
+            </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1a1a1a' }}>{cartItem.qty}</Text>
+            <TouchableOpacity onPress={() => increaseQty(cartItem.id)} style={{ width: 44, height: 44, backgroundColor: '#A50021', borderRadius: 22, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={() => handleAddToCart()}
             style={{
-              fontWeight: "bold",
-              color: "#1a1a1a",
+              flex: 1,
+              height: 58,
+              justifyContent: "center",
+              alignItems: "center",
+              borderRightWidth: 1,
+              borderRightColor: "#eee",
             }}
           >
-            {inCart ? "GO TO CART" : "ADD TO CART"}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: "#1a1a1a",
+              }}
+            >
+              ADD TO CART
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           onPress={() => {

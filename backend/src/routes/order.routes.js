@@ -21,13 +21,13 @@ router.get("/my", protect, getMyOrders);
 router.patch("/:id/cancel", protect, cancelOrder);
 
 // ─────────────────────────────────────────────
-// DELIVERY PARTNER ROUTES  (no login required)
+// DELIVERY PARTNER ROUTES
 // ─────────────────────────────────────────────
 // ⚠️  These two MUST be declared before  GET /:id
 //     Otherwise Express reads "delivery" as the :id param
 // ─────────────────────────────────────────────
-router.get("/delivery", getDeliveryOrders);
-router.patch("/:id/deliver", deliverOrder);
+router.get("/delivery", protect, restrictTo("delivery", "admin"), getDeliveryOrders);
+router.patch("/:id/deliver", protect, restrictTo("delivery", "admin"), deliverOrder);
 
 // ─────────────────────────────────────────────
 // SHARED (owner or admin)

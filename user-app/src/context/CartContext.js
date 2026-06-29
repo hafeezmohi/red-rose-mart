@@ -13,14 +13,18 @@ export const CartProvider = ({ children }) => {
   const getToken = async () => await AsyncStorage.getItem('token');
 
   // fetch cart from backend
-  const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async (showLoader = true) => {
     try {
-      setLoading(true);
+      if (showLoader) setLoading(true);
       const token = await getToken();
       if (!token) return;
 
       const res = await fetch(`${API_URL}/api/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
       });
       const data = await res.json();
 
@@ -45,7 +49,6 @@ export const CartProvider = ({ children }) => {
           image: item.product.images?.[0] ||
             `https://placehold.co/150x150/f5f5f5/A50021?text=${encodeURIComponent(item.product.name)}`,
           unit: item.product.unit,
-          stock: item.product.stock,
           qty: item.quantity,
         }));
         setCartItems(mapped);
@@ -58,7 +61,7 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    fetchCart();
+    fetchCart(true);
   }, []);
 
   // add to cart
@@ -71,7 +74,7 @@ export const CartProvider = ({ children }) => {
         body: JSON.stringify({ productId: product.id, quantity: 1 }),
       });
       const data = await res.json();
-      if (data.success) await fetchCart();
+      if (data.success) await fetchCart(false);
     } catch (err) {
       console.error('Failed to add to cart:', err);
     }
@@ -83,6 +86,9 @@ export const CartProvider = ({ children }) => {
       const item = cartItems.find(i => i.id === productId);
       if (!item) return;
 
+      // Optimistic update
+      setCartItems(prev => prev.map(i => i.id === productId ? { ...i, qty: i.qty + 1 } : i));
+
       const token = await getToken();
       const res = await fetch(`${API_URL}/api/cart/${productId}`, {
         method: 'PATCH',
@@ -90,7 +96,7 @@ export const CartProvider = ({ children }) => {
         body: JSON.stringify({ quantity: item.qty + 1 }),
       });
       const data = await res.json();
-      if (data.success) await fetchCart();
+      if (data.success) await fetchCart(false);
     } catch (err) {
       console.error('Failed to increase qty:', err);
     }
@@ -102,6 +108,13 @@ export const CartProvider = ({ children }) => {
       const item = cartItems.find(i => i.id === productId);
       if (!item) return;
 
+      // Optimistic update
+      if (item.qty <= 1) {
+        setCartItems(prev => prev.filter(i => i.id !== productId));
+      } else {
+        setCartItems(prev => prev.map(i => i.id === productId ? { ...i, qty: i.qty - 1 } : i));
+      }
+
       const token = await getToken();
 
       if (item.qty <= 1) {
@@ -111,7 +124,7 @@ export const CartProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (data.success) await fetchCart();
+        if (data.success) await fetchCart(false);
       } else {
         // decrease
         const res = await fetch(`${API_URL}/api/cart/${productId}`, {
@@ -120,7 +133,7 @@ export const CartProvider = ({ children }) => {
           body: JSON.stringify({ quantity: item.qty - 1 }),
         });
         const data = await res.json();
-        if (data.success) await fetchCart();
+        if (data.success) await fetchCart(false);
       }
     } catch (err) {
       console.error('Failed to decrease qty:', err);
@@ -130,12 +143,15 @@ export const CartProvider = ({ children }) => {
   // clear cart (after order placed)
   const clearCart = async () => {
     try {
-      const token = await getToken();
+      setCartItems([]);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        return;
+      }
       await fetch(`${API_URL}/api/cart`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCartItems([]);
     } catch (err) {
       console.error('Failed to clear cart:', err);
     }
@@ -155,5 +171,3 @@ export const CartProvider = ({ children }) => {
     </CartContext.Provider>
   );
 };
-
-export const useCart = () => useContext(CartContext);

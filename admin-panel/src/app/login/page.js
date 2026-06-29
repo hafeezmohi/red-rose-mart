@@ -5,13 +5,37 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_URL } from "../../config";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  const handleForgot = async () => {
+    if (!forgotEmail.trim()) return toast.error("Please enter admin email");
+    try {
+      setForgotLoading(true);
+      const res = await fetch(`${API_URL}/api/auth/forgot-admin-details`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (!data.success) return toast.error(data.message || "Failed");
+      toast.success("Reset link sent to your email!");
+      setShowForgot(false);
+      setForgotEmail("");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
@@ -136,6 +160,15 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
 
+          {/* Forgot details link */}
+          <button
+            type="button"
+            onClick={() => setShowForgot(true)}
+            className="text-red-500 hover:text-red-700 text-sm font-medium mt-3 self-end transition"
+          >
+            Forgot details?
+          </button>
+
           {/* Credentials hint */}
           <div className="mt-8 bg-gray-100 rounded-2xl p-5">
             <h3 className="font-bold text-black mb-3">Admin Credentials</h3>
@@ -149,6 +182,41 @@ export default function LoginPage() {
         </div>
 
       </div>
+
+      {/* Forgot Details Modal */}
+      {showForgot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <h2 className="text-xl font-bold text-black mb-2">Forgot Details</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              Enter your admin email. We&apos;ll send a secure link to change your ID or password. The link expires in 10 minutes.
+            </p>
+            <input
+              type="email"
+              placeholder="Admin email address"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleForgot()}
+              className="w-full border border-gray-300 rounded-xl px-4 h-12 text-black outline-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleForgot}
+                disabled={forgotLoading}
+                className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white h-12 rounded-xl font-semibold transition"
+              >
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </button>
+              <button
+                onClick={() => { setShowForgot(false); setForgotEmail(""); }}
+                className="px-6 border border-gray-300 hover:bg-gray-50 text-black h-12 rounded-xl font-semibold transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

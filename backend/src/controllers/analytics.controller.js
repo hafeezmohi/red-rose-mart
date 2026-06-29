@@ -109,12 +109,20 @@ export const getAnalytics = async (req, res, next) => {
       // 8. Day, Week, Month specific metrics
       Order.aggregate([
         {
+          $match: {
+            $or: [
+              { createdAt: { $gte: new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000) } },
+              { deliveredAt: { $gte: new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000) } }
+            ]
+          }
+        },
+        {
           $group: {
             _id: null,
             revenueToday: {
               $sum: {
                 $cond: [
-                  { $and: [{ $gte: ["$createdAt", new Date(now.setHours(0,0,0,0))] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  { $and: [{ $gte: ["$deliveredAt", new Date(new Date().setHours(0,0,0,0))] }, { $eq: ["$orderStatus", "delivered"] }] },
                   "$totalPrice",
                   0
                 ]
@@ -123,7 +131,7 @@ export const getAnalytics = async (req, res, next) => {
             revenueWeek: {
               $sum: {
                 $cond: [
-                  { $and: [{ $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - new Date().getDay())).setHours(0,0,0,0)] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  { $and: [{ $gte: ["$deliveredAt", new Date(new Date().setDate(new Date().getDate() - new Date().getDay())).setHours(0,0,0,0)] }, { $eq: ["$orderStatus", "delivered"] }] },
                   "$totalPrice",
                   0
                 ]
@@ -132,7 +140,7 @@ export const getAnalytics = async (req, res, next) => {
             revenueMonth: {
               $sum: {
                 $cond: [
-                  { $and: [{ $gte: ["$createdAt", new Date(new Date().getFullYear(), new Date().getMonth(), 1)] }, { $eq: ["$orderStatus", "delivered"] }] },
+                  { $and: [{ $gte: ["$deliveredAt", new Date(new Date().getFullYear(), new Date().getMonth(), 1)] }, { $eq: ["$orderStatus", "delivered"] }] },
                   "$totalPrice",
                   0
                 ]

@@ -18,8 +18,8 @@ router.get("/categories", getCategories);
 router.get("/:id", getProduct);
 
 // Admin only
-router.post("/", protect, createProduct);
-router.patch("/:id", protect, updateProduct);
-router.delete("/:id", protect, deleteProduct);
+router.post("/", protect, restrictTo('admin'), createProduct);
+router.patch("/:id", protect, restrictTo('admin'), updateProduct);
+router.delete("/:id", protect, restrictTo('admin'), deleteProduct);
 
 export default router;

@@ -97,7 +97,7 @@ export default function AddressScreen({ route, navigation }) {
       });
       const data = await res.json();
       if (!data.success) { Alert.alert('Error', data.message); return; }
-      clearCart();
+      await clearCart();
       navigation.reset({
         index: 0,
         routes: [{ name: 'Success', params: { order: data.order } }],

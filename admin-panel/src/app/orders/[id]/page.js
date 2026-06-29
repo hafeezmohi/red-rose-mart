@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
-import { ArrowLeft, MapPin, MessageCircle, Truck } from "lucide-react";
+import { ArrowLeft, MapPin, MessageCircle, Truck, XCircle } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_URL } from "../../../config";
+import PrintableReceipt from "../../../components/PrintableReceipt";
 
 export default function OrderDetailPage() {
     const { id } = useParams();
@@ -160,97 +161,7 @@ Thank you for shopping with Red Rose Mart! 🌹`;
 
     return (
         <>
-            {/* --- Global Print Styles --- */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                    @media print {
-                        @page { margin: 0; }
-                        body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-                    }
-                `
-            }} />
-
-            {/* --- Print Receipt Layout (Hidden on Screen, Visible on Print) --- */}
-            <div className="hidden print:block w-[80mm] p-4 text-black text-sm mx-auto font-sans" style={{ maxWidth: "80mm" }}>
-                {/* Header */}
-                <div className="text-center mb-4">
-                    <h1 className="font-bold text-2xl m-0">Red Rose Mart</h1>
-                    <p className="text-xs text-gray-700 m-0">Supermarket</p>
-                </div>
-
-                {/* Order Details */}
-                <div className="text-xs mb-3 flex justify-between">
-                    <div>
-                        <p className="m-0"><strong>Order:</strong> #{order._id.slice(-6).toUpperCase()}</p>
-                        <p className="m-0"><strong>Date:</strong> {new Date().toLocaleDateString("en-IN")}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="m-0"><strong>Time:</strong> {new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}</p>
-                    </div>
-                </div>
-
-                <div className="border-t-2 border-dashed border-black mb-2"></div>
-
-                {/* Items Table */}
-                <table className="w-full text-xs mb-2 text-left">
-                    <thead>
-                        <tr>
-                            <th className="pb-1 w-3/5">Item</th>
-                            <th className="pb-1 w-1/5 text-center">Qty</th>
-                            <th className="pb-1 w-1/5 text-right">Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {order.items.map((item, i) => (
-                            <tr key={i}>
-                                <td className="py-1 pr-1">{item.name}</td>
-                                <td className="py-1 text-center">{item.quantity}</td>
-                                <td className="py-1 text-right">₹{item.price * item.quantity}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                <div className="border-t-2 border-dashed border-black mb-2"></div>
-
-                {/* Totals */}
-                <div className="text-xs space-y-1 mb-2">
-                    <div className="flex justify-between">
-                        <span>Items Total:</span>
-                        <span>₹{order.itemsPrice}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Delivery Fee:</span>
-                        <span>{order.deliveryFee === 0 ? "FREE" : `₹${order.deliveryFee}`}</span>
-                    </div>
-                </div>
-
-                <div className="border-t-2 border-solid border-black mb-2"></div>
-
-                <div className="flex justify-between text-lg font-bold mb-3">
-                    <span>TOTAL:</span>
-                    <span>₹{order.totalPrice}</span>
-                </div>
-
-                {/* Customer Details */}
-                <div className="text-xs mb-4">
-                    <p className="font-bold border-b border-black inline-block mb-1">Customer Details:</p>
-                    <p className="m-0 uppercase font-bold">{order.user?.name || "Customer"}</p>
-                    <p className="m-0">{order.user?.phone || "No Phone"}</p>
-                    <p className="m-0 mt-1">{order.deliveryAddress?.street}</p>
-                    <p className="m-0">{order.deliveryAddress?.city} - {order.deliveryAddress?.pincode}</p>
-                </div>
-
-                <div className="border-t-2 border-dashed border-black mb-2"></div>
-
-                {/* Footer */}
-                <div className="text-center text-xs mt-3">
-                    <p className="font-bold m-0 text-sm">Thank You!</p>
-                    <p className="m-0">Visit us again.</p>
-                </div>
-                {/* Empty space at the bottom for paper cutting allowance */}
-                <div className="h-8"></div>
-            </div>
+            <PrintableReceipt order={order} />
 
             {/* --- Main Screen Layout (Visible on Screen, Hidden on Print) --- */}
             <div className="flex bg-gray-100 min-h-screen print:hidden">
@@ -335,6 +246,30 @@ Thank you for shopping with Red Rose Mart! 🌹`;
                                         className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-2xl font-semibold transition"
                                     >
                                         {updating ? "Updating..." : "Mark Delivered"}
+                                    </button>
+                                )}
+
+                                {/* Cancel Order — for pending or out_for_delivery */}
+                                {(isPending || isDelivery) && (
+                                    <button
+                                        onClick={() => {
+                                            if (!window.confirm("Are you sure you want to cancel this order? This cannot be undone.")) return;
+                                            setUpdating(true);
+                                            const token = localStorage.getItem("admin-token");
+                                            fetch(`${API_URL}/api/orders/${id}/status`, {
+                                                method: "PATCH",
+                                                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                                body: JSON.stringify({ status: "cancelled", reason: "Cancelled by admin due to emergency" }),
+                                            })
+                                                .then(res => res.json())
+                                                .then(data => { if (data.success) setOrder(data.order); })
+                                                .finally(() => setUpdating(false));
+                                        }}
+                                        disabled={updating}
+                                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-2xl font-semibold transition"
+                                    >
+                                        <XCircle size={18} />
+                                        {updating ? "Updating..." : "Cancel Order"}
                                     </button>
                                 )}
                             </div>
