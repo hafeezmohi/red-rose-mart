@@ -17,14 +17,15 @@ export const STATUS_LABELS = {
 };
 
 export const CATEGORIES = [
-    { id: "vegetables", label: "Vegetables & Fruits" },
-    { id: "dairy",      label: "Dairy & Breakfast" },
-    { id: "snacks",     label: "Snacks & Munchies" },
-    { id: "beverages",  label: "Cold Drinks & Juices" },
-    { id: "bakery",     label: "Bakery & Biscuits" },
-    { id: "meat",       label: "Chicken, Meat & Fish" },
-    { id: "personal",   label: "Personal Care" },
-    { id: "household",  label: "Household Essentials" },
-];
+    { id: "rice-grains", label: "Food Grains" },
+    { id: "instant-foods", label: "Instant Foods" },
+    { id: "snacks", label: "Snacks" },
+    { id: "oil-masala", label: "Oil & Masala" },
+    { id: "beverages", label: "Beverages" },
+    { id: "other", label: "Other Products" },
+    { id: "offers", label: "Special Offers" },
+    { id: "beauty-and-personal-care", label: "Beauty & Personal Care" },
+    { id: "dryfruits", label: "Dryfruits" }
+  ];
 
 export const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.label]));

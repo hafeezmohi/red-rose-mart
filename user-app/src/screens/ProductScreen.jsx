@@ -444,10 +444,10 @@ export default function ProductScreen({ route, navigation }) {
               lineHeight: 24,
             }}
           >
-            {product.description || "Premium quality grocery product freshly packed for fast delivery. Carefully selected for freshness and quality."}
+            {product.description || `Premium quality ${product.name} freshly packed for fast delivery. Carefully selected for freshness and quality.`}
           </Text>
           
-          {(product.description || "Premium quality grocery product freshly packed for fast delivery. Carefully selected for freshness and quality.").length > 120 && (
+          {(product.description || `Premium quality ${product.name} freshly packed for fast delivery. Carefully selected for freshness and quality.`).length > 120 && (
             <TouchableOpacity onPress={() => setIsDescExpanded(!isDescExpanded)}>
               <Text style={{ color: "#A50021", fontWeight: "bold", marginTop: 8 }}>
                 {isDescExpanded ? "Show Less" : "Read More"}

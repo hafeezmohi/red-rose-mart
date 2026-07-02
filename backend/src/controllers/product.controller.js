@@ -68,20 +68,15 @@ export const getProduct = async (req, res, next) => {
 // @access  Public
 export const getCategories = async (req, res) => {
   const categories = [
-    { id: "fruits-vegetables", label: "Fruits & Vegetables" },
-    { id: "dairy-eggs", label: "Dairy & Eggs" },
-    { id: "rice-grains", label: "Rice & Grains" },
-    { id: "snacks", label: "Snacks" },
-    { id: "beverages", label: "Beverages" },
-    { id: "personal-care", label: "Personal Care" },
-    { id: "haircare", label: "Haircare" },
-    { id: "household", label: "Household" },
-    { id: "frozen", label: "Frozen" },
-    { id: "other", label: "Other" },
+    { id: "rice-grains", label: "Food Grains" },
     { id: "instant-foods", label: "Instant Foods" },
+    { id: "snacks", label: "Snacks" },
     { id: "oil-masala", label: "Oil & Masala" },
-    { id: "beauty-hygiene", label: "Beauty & Hygiene" },
+    { id: "beverages", label: "Beverages" },
+    { id: "other", label: "Other Products" },
     { id: "offers", label: "Special Offers" },
+    { id: "beauty-and-personal-care", label: "Beauty & Personal Care" },
+    { id: "dryfruits", label: "Dryfruits" },
   ];
   sendSuccess(res, 200, "Categories fetched", { categories });
 };

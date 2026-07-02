@@ -12,28 +12,11 @@ import {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://red-rose-backend.onrender.com";
 const LIMIT = 25;
 
-const CATEGORIES = [
-    { id: "fruits-vegetables", label: "Fruits & Vegetables" },
-    { id: "dairy-eggs",        label: "Dairy & Eggs" },
-    { id: "rice-grains",       label: "Rice & Grains" },
-    { id: "snacks",            label: "Snacks" },
-    { id: "beverages",         label: "Beverages" },
-    { id: "personal-care",     label: "Personal Care" },
-    { id: "haircare",          label: "Haircare" },
-    { id: "household",         label: "Household" },
-    { id: "frozen",            label: "Frozen" },
-    { id: "other",             label: "Other" },
-    { id: "instant-foods", label: "Instant Foods" },
-    { id: "oil-masala", label: "Oil & Masala" },
-    { id: "beauty-hygiene", label: "Beauty & Hygiene" },
-    { id: "offers", label: "Special Offers" },
-];
-
-const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map(c => [c.id, c.label]));
+import { CATEGORIES, CATEGORY_LABEL } from "../../constants";
 
 const EMPTY_FORM = {
     name: "", category: "", price: "", discountPrice: "",
-    unit: "",
+    unit: "", description: "",
     isFeatured: false, isActive: true, images: [],
 };
 
@@ -130,7 +113,13 @@ function ProductForm({ initial, onSave, onCancel, saving }) {
         if (!form.category)        return toast.error("Category is required");
         if (!form.price)           return toast.error("Price is required");
         if (!form.unit.trim())     return toast.error("Unit is required");
-        onSave(form);
+        
+        const payload = { ...form };
+        if (!payload.description || payload.description.trim() === "") {
+            payload.description = `Premium quality ${payload.name.trim()} delivered fresh to your door.`;
+        }
+        
+        onSave(payload);
     };
 
     const inputCls = "border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none text-black placeholder-gray-400 w-full";
@@ -174,6 +163,17 @@ function ProductForm({ initial, onSave, onCancel, saving }) {
                     <input type="text" placeholder="500g / 1kg / pack" value={form.unit}
                         onChange={e => set("unit", e.target.value)} className={inputCls} />
                 </div>
+            </div>
+
+            {/* Row - Description */}
+            <div>
+                <label className="text-xs font-semibold text-gray-600 mb-1 block">Description</label>
+                <textarea 
+                    placeholder="Enter product description (leave blank for auto-generated)" 
+                    value={form.description || ""}
+                    onChange={e => set("description", e.target.value)} 
+                    className={`${inputCls} resize-y min-h-[80px]`} 
+                />
             </div>
 
             {/* Row 3 */}
@@ -227,6 +227,7 @@ function EditModal({ product, onClose, onUpdated }) {
                 price: Number(form.price),
                 discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
                 unit: form.unit,
+                description: form.description,
                 isFeatured: form.isFeatured, isActive: form.isActive,
                 images: form.images,
             };
@@ -247,6 +248,7 @@ function EditModal({ product, onClose, onUpdated }) {
         name: product.name, category: product.category,
         price: product.price ?? "", discountPrice: product.discountPrice ?? "",
         unit: product.unit ?? "",
+        description: product.description ?? "",
         isFeatured: product.isFeatured ?? false,
         isActive: product.isActive ?? true,
         images: product.images ?? [],
@@ -330,6 +332,7 @@ export default function ProductsPage() {
                 price: Number(form.price),
                 ...(form.discountPrice && { discountPrice: Number(form.discountPrice) }),
                 unit: form.unit,
+                description: form.description,
                 isFeatured: form.isFeatured, isActive: form.isActive,
                 images: form.images,
             };

@@ -27,40 +27,15 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onr
 
 const categories = [
   { id: "all", name: "All Categories", icon: "grid-outline" },
-  {
-    id: "fruits-vegetables",
-    name: "Fruits & Vegetables",
-    icon: "leaf-outline",
-  },
-  { id: "dairy-eggs", name: "Dairy & Eggs", icon: "egg-outline" },
-  { id: "rice-grains", name: "Rice & Grains", icon: "nutrition-outline" },
+  { id: "rice-grains", name: "Food Grains", icon: "nutrition-outline" },
+  { id: "instant-foods", name: "Instant Foods", icon: "fast-food-outline" },
   { id: "snacks", name: "Snacks", icon: "fast-food-outline" },
+  { id: "oil-masala", name: "Oil & Masala", icon: "restaurant-outline" },
   { id: "beverages", name: "Beverages", icon: "cafe-outline" },
-  { id: "personal-care", name: "Personal Care", icon: "body-outline" },
-  { id: "haircare", name: "Haircare", icon: "cut-outline" },
-  { id: "household", name: "Household", icon: "home-outline" },
-  { id: "frozen", name: "Frozen", icon: "snow-outline" },
-  { id: "other", name: "Other", icon: "cube-outline" },
-  {
-    id: "instant-foods",
-    name: "Instant Foods",
-    icon: "fast-food-outline",
-  },
-  {
-    id: "oil-masala",
-    name: "Oil & Masala",
-    icon: "restaurant-outline",
-  },
-  {
-    id: "beauty-hygiene",
-    name: "Beauty & Hygiene",
-    icon: "sparkles-outline",
-  },
-  {
-    id: "offers",
-    name: "Special Offers",
-    icon: "pricetag-outline",
-  },
+  { id: "other", name: "Other Products", icon: "cube-outline" },
+  { id: "offers", name: "Special Offers", icon: "pricetag-outline" },
+  { id: "beauty-and-personal-care", name: "Beauty & Personal Care", icon: "sparkles-outline" },
+  { id: "dryfruits", name: "Dryfruits", icon: "nutrition-outline" },
 ];
 
 const SORT_OPTIONS = [
@@ -649,12 +624,7 @@ export default function HomeScreen({ navigation, route }) {
               {
                 id: "oil-masala",
                 name: "Oil & Masala",
-                image: require("../../assets/oilmasala.jpeg"),
-              },
-              {
-                id: "personal-care",
-                name: "Personal Care",
-                image: require("../../assets/personalcare.jpeg"),
+                image: require("../../assets/oilandmasala.jpeg"),
               },
               {
                 id: "beverages",
@@ -662,19 +632,24 @@ export default function HomeScreen({ navigation, route }) {
                 image: require("../../assets/beverages.jpeg"),
               },
               {
-                id: "beauty-hygiene",
-                name: "Beauty & Hygiene",
-                image: require("../../assets/beautyhygiene.jpeg"),
-              },
-              {
                 id: "other",
                 name: "Other Products",
                 image: require("../../assets/otherproducts.jpeg"),
               },
               {
+                id: "beauty-and-personal-care",
+                name: "Beauty & Personal Care",
+                image: require("../../assets/beautyandpersonalcare.jpeg"),
+              },
+              {
+                id: "dryfruits",
+                name: "Dryfruits",
+                image: require("../../assets/dryfruits.jpeg"),
+              },
+              {
                 id: "offers",
                 name: "Special Offers",
-                image: require("../../assets/specialoffer.png"),
+                image: require("../../assets/specialoffer.jpeg"),
               },
             ].map((item, index) => (
               <TouchableOpacity
