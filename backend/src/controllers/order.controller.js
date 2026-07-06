@@ -173,6 +173,7 @@ export const cancelOrder = async (req, res, next) => {
 export const getDeliveryOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ orderStatus: "out_for_delivery" })
+      .populate("user", "name phone")
       .select("-deliveryOtp") // OTP is never sent to frontend
       .sort({ createdAt: -1 });
 

@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   X,
   Loader2,
+  User,
+  Phone,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://red-rose-backend.onrender.com";
@@ -181,6 +183,28 @@ export default function DeliveryPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Customer */}
+              {order.user && (
+                <div className="flex items-center justify-between mb-4 bg-blue-50/50 border border-blue-100/50 rounded-xl px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-blue-500 shrink-0" />
+                    <p className="text-black text-sm font-semibold">
+                      {order.user.name}
+                    </p>
+                  </div>
+                  {order.user.phone && (
+                    <a
+                      href={`tel:${order.user.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1.5 text-blue-600 bg-blue-100/50 px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <Phone size={13} className="shrink-0" />
+                      <span className="text-xs font-semibold">Call</span>
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* Items */}
               <div className="flex items-center gap-2 mb-4">
