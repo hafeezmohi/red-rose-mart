@@ -26,8 +26,8 @@ router.patch("/:id/cancel", protect, cancelOrder);
 // ⚠️  These two MUST be declared before  GET /:id
 //     Otherwise Express reads "delivery" as the :id param
 // ─────────────────────────────────────────────
-router.get("/delivery", protect, restrictTo("delivery", "admin"), getDeliveryOrders);
-router.patch("/:id/deliver", protect, restrictTo("delivery", "admin"), deliverOrder);
+router.get("/delivery", getDeliveryOrders);
+router.patch("/:id/deliver", deliverOrder);
 
 // ─────────────────────────────────────────────
 // SHARED (owner or admin)
