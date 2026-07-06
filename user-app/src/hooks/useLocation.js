@@ -12,10 +12,7 @@ export function useLocation() {
     const value = text.toLowerCase();
     return (
       value.includes("kagaznagar") ||
-      value.includes("kaghaznagar") ||
-      value.includes("asifabad") ||
-      value.includes("komaram bheem") ||
-      value.includes("adilabad")
+      value.includes("kaghaznagar")
     );
   };
 

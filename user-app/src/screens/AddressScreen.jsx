@@ -60,6 +60,22 @@ export default function AddressScreen({ route, navigation }) {
       const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
 
       if (place) {
+        const fullAddressStr = [
+          place.name, place.street, place.district, place.city, place.subregion, place.region
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        const isKagaznagar =
+          fullAddressStr.includes("kagaznagar") ||
+          fullAddressStr.includes("kaghaznagar");
+
+        if (!isKagaznagar) {
+          Alert.alert(
+            "Not Deliverable",
+            "Sorry, we deliver only in Kagaznagar, Telangana."
+          );
+          return;
+        }
+
         const addr = {
           street: [place.streetNumber, place.street, place.district].filter(Boolean).join(', '),
           city: place.city || place.subregion || '',
