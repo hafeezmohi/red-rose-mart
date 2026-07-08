@@ -2,6 +2,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
+import { useEffect } from "react";
+import { Platform } from "react-native";
+import * as ExpoInAppUpdates from "expo-in-app-updates";
 import SplashScreen from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import CompleteProfileScreen from "./src/screens/CompleteProfileScreen";
@@ -34,6 +37,22 @@ fetch(`${API_URL}/api/products?page=1&limit=1`).catch(() => {});
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      if (__DEV__ || Platform.OS === "web") return;
+      try {
+        const result = await ExpoInAppUpdates.checkForUpdate();
+        if (result.updateAvailable) {
+          // 'true' forces an immediate update, 'false' allows flexible (background) update
+          await ExpoInAppUpdates.startUpdate(true); 
+        }
+      } catch (err) {
+        console.error("Update check failed:", err);
+      }
+    };
+    checkForUpdates();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AddressProvider>
