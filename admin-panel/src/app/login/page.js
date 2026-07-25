@@ -168,17 +168,6 @@ export default function LoginPage() {
           >
             Forgot details?
           </button>
-
-          {/* Credentials hint */}
-          <div className="mt-8 bg-gray-100 rounded-2xl p-5">
-            <h3 className="font-bold text-black mb-3">Admin Credentials</h3>
-            <p className="text-gray-600">
-              Email: <span className="font-semibold text-black">admin@redrose</span>
-            </p>
-            <p className="text-gray-600 mt-1">
-              Password: <span className="font-semibold text-black">redrosemart</span>
-            </p>
-          </div>
         </div>
 
       </div>
