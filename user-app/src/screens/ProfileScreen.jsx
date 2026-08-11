@@ -58,7 +58,7 @@ export default function ProfileScreen({ navigation, route }) {
   };
 
   const handleWhatsApp = async () => {
-    const url = `https://wa.me/+918074559488?text=${encodeURIComponent('Hello Red Rose Online Grocery, I need support regarding my order.')}`;
+    const url = `https://wa.me/+918074559488?text=${encodeURIComponent('Hello Rose Mart Online Grocery, I need support regarding my order.')}`;
     try {
       await Linking.openURL(url);
     } catch {

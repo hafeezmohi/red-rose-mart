@@ -69,7 +69,7 @@ export default function SuccessScreen({ route, navigation }) {
           paddingHorizontal: 10,
         }}
       >
-        Thank you for shopping with Red Rose Mart.
+        Thank you for shopping with Rose Mart Online Grocery.
         {'\n'}
         Your order has been received and is now being prepared for delivery.
       </Text>

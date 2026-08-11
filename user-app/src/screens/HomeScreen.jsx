@@ -22,6 +22,8 @@ import Skeleton from '../components/Skeleton';
 import { CartContext } from "../context/CartContext";
 import { AddressContext } from "../context/AddressContext";
 import ProductCard from "../components/ProductCard";
+import CategoryModal from "../components/CategoryModal";
+import { useNavigation } from '@react-navigation/native';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://red-rose-backend.onrender.com/";
 
@@ -44,7 +46,7 @@ const SORT_OPTIONS = [
   { id: "high_low", label: "Price: High - Low" },
 ];
 
-const PAGE_SIZE = 40;
+const PAGE_SIZE = 50;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -59,16 +61,179 @@ const CategoryIcon = ({ item, size = 28, color = "#A50021" }) => {
   return <Ionicons name={item.icon} size={size} color={color} />;
 };
 
+const LocalSearchBar = ({ isFilterActive, setShowFilter }) => {
+  const [text, setText] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const debounceRef = useRef(null);
+  const navigation = useNavigation();
+
+  const fetchSuggestions = (query) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!query.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      setLoadingSuggestions(true);
+      try {
+        const url = `${API_URL}/api/products?limit=8&search=${encodeURIComponent(query.trim())}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success && data.products.length > 0) {
+          // Deduplicate by name (case-insensitive)
+          const seen = new Set();
+          const unique = [];
+          for (const p of data.products) {
+            const lower = p.name.toLowerCase();
+            if (!seen.has(lower)) {
+              seen.add(lower);
+              unique.push(p.name);
+            }
+            if (unique.length >= 6) break;
+          }
+          setSuggestions(unique);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } catch (err) {
+        console.error("Suggestion fetch error:", err);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 300);
+  };
+
+  const handleChangeText = (newText) => {
+    setText(newText);
+    fetchSuggestions(newText);
+  };
+
+  const handleSearch = (query) => {
+    const trimmed = (query || text).trim();
+    if (trimmed) {
+      setShowSuggestions(false);
+      setSuggestions([]);
+      setText("");
+      navigation.navigate('SearchResults', { searchQuery: trimmed });
+    }
+  };
+
+  const handleSuggestionPress = (suggestion) => {
+    handleSearch(suggestion);
+  };
+
+  return (
+    <View style={{ position: "relative", zIndex: 100, marginTop: 14 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: "#fff",
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          height: 44,
+        }}
+      >
+        <Ionicons
+          name="search"
+          size={18}
+          color="#999"
+          style={{ marginRight: 8 }}
+        />
+        <TextInput
+          placeholder="Search for Products, Brands and More"
+          placeholderTextColor="#aaa"
+          value={text}
+          onChangeText={handleChangeText}
+          onSubmitEditing={() => handleSearch()}
+          returnKeyType="search"
+          style={{ flex: 1, fontSize: 13, color: "#1a1a1a" }}
+        />
+        {text.length > 0 && (
+          <TouchableOpacity onPress={() => { setText(""); setSuggestions([]); setShowSuggestions(false); }}>
+            <Ionicons name="close" size={18} color="#999" />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          onPress={() => handleSearch()}
+          style={{ marginLeft: 8, backgroundColor: '#A50021', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 }}
+        >
+          <Ionicons name="search" size={16} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowFilter(true)}
+          style={{ marginLeft: 8 }}
+        >
+          <Ionicons
+            name={isFilterActive ? "options" : "options-outline"}
+            size={20}
+            color={isFilterActive ? "#A50021" : "#aaa"}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Suggestions Dropdown */}
+      {showSuggestions && suggestions.length > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: 48,
+            left: 0,
+            right: 0,
+            backgroundColor: "#fff",
+            borderRadius: 10,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            elevation: 8,
+            zIndex: 200,
+            overflow: "hidden",
+          }}
+        >
+          {suggestions.map((item, index) => (
+            <TouchableOpacity
+              key={`suggestion-${index}`}
+              onPress={() => handleSuggestionPress(item)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                borderBottomWidth: index < suggestions.length - 1 ? 1 : 0,
+                borderBottomColor: "#f0f0f0",
+              }}
+            >
+              <Ionicons name="search-outline" size={15} color="#bbb" style={{ marginRight: 10 }} />
+              <Text
+                numberOfLines={1}
+                style={{ flex: 1, fontSize: 13, color: "#333" }}
+              >
+                {item}
+              </Text>
+              <Ionicons name="arrow-forward-outline" size={14} color="#ccc" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 export default function HomeScreen({ navigation, route }) {
-  const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeModalCategory, setActiveModalCategory] = useState(null);
+  const [activeModalCategoryName, setActiveModalCategoryName] = useState("");
   const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [showCartBar, setShowCartBar] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [user, setUser] = useState(null);
@@ -103,7 +268,7 @@ export default function HomeScreen({ navigation, route }) {
   // Auto-scroll banner every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      const next = (currentBanner + 1) % 3;
+      const next = (currentBanner + 1) % 2;
 
       bannerScrollRef.current?.scrollTo({
         x: next * (SCREEN_WIDTH - 24),
@@ -117,26 +282,29 @@ export default function HomeScreen({ navigation, route }) {
   }, [currentBanner]);
 
   const fetchProducts = useCallback(
-    async (category = "All", searchTerm = "", pageNum = 1, append = false) => {
+    async (category = "all", pageNum = 1, append = false) => {
       try {
-        const limit = searchTerm ? 500 : PAGE_SIZE;
-        let url = `${API_URL}/api/products?limit=${limit}&page=${pageNum}`;
+        let url = `${API_URL}/api/products?limit=${PAGE_SIZE}&page=${pageNum}`;
 
         if (category !== "all") {
           url += `&category=${category}`;
         }
-
-        if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
 
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.success) {
           const newProducts = data.products;
-          setProducts((prev) =>
-            append ? [...prev, ...newProducts] : newProducts,
-          );
-          setHasMore(!searchTerm && newProducts.length === PAGE_SIZE);
+          if (append) {
+            setProducts((prev) => {
+              const existingIds = new Set(prev.map(p => p._id?.$oid || p._id));
+              const uniqueNew = newProducts.filter(p => !existingIds.has(p._id?.$oid || p._id));
+              return [...prev, ...uniqueNew];
+            });
+          } else {
+            setProducts(newProducts);
+          }
+          setHasMore(newProducts.length === PAGE_SIZE);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -152,33 +320,20 @@ export default function HomeScreen({ navigation, route }) {
   useEffect(() => {
     setPage(1);
     setLoading(true);
-    fetchProducts(selectedCategory, search, 1, false);
+    fetchProducts(selectedCategory, 1, false);
   }, [selectedCategory]);
-
-  const onSearchChange = (text) => {
-    setSearch(text);
-    setPage(1);
-
-    if (searchTimeout) clearTimeout(searchTimeout);
-    setSearchTimeout(
-      setTimeout(() => {
-        setLoading(true);
-        fetchProducts(selectedCategory, text, 1, false);
-      }, 500),
-    );
-  };
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
     setLoadingMore(true);
-    fetchProducts(selectedCategory, search, nextPage, true);
+    fetchProducts(selectedCategory, nextPage, true);
   };
 
   const onRefresh = () => {
     setRefreshing(true);
     setPage(1);
-    fetchProducts(selectedCategory, search, 1, false);
+    fetchProducts(selectedCategory, 1, false);
   };
 
   useEffect(() => {
@@ -230,9 +385,6 @@ export default function HomeScreen({ navigation, route }) {
   }));
 
   let filteredProducts = mappedProducts.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
     const matchesCategory =
       selectedCategory === "all"
         ? true
@@ -244,7 +396,6 @@ export default function HomeScreen({ navigation, route }) {
       appliedMax !== "" ? product.price <= Number(appliedMax) : true;
     const matchesOffer = showOffersOnly ? product.originalPrice !== null : true;
     return (
-      matchesSearch &&
       matchesCategory &&
       matchesMin &&
       matchesMax &&
@@ -342,6 +493,8 @@ export default function HomeScreen({ navigation, route }) {
             paddingTop: insets.top + 10,
             paddingHorizontal: 16,
             paddingBottom: 16,
+            zIndex: 100,
+            elevation: 100,
           }}
         >
           <View
@@ -375,46 +528,10 @@ export default function HomeScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#fff",
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              height: 44,
-              marginTop: 14,
-            }}
-          >
-            <Ionicons
-              name="search"
-              size={18}
-              color="#999"
-              style={{ marginRight: 8 }}
-            />
-            <TextInput
-              placeholder="Search for Products, Brands and More"
-              placeholderTextColor="#aaa"
-              value={search}
-              onChangeText={onSearchChange}
-              style={{ flex: 1, fontSize: 13, color: "#1a1a1a" }}
-            />
-            {search.length > 0 && (
-              <TouchableOpacity onPress={() => onSearchChange("")}>
-                <Ionicons name="close" size={18} color="#999" />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              onPress={() => setShowFilter(true)}
-              style={{ marginLeft: 8 }}
-            >
-              <Ionicons
-                name={isFilterActive ? "options" : "options-outline"}
-                size={20}
-                color={isFilterActive ? "#A50021" : "#aaa"}
-              />
-            </TouchableOpacity>
-          </View>
+          <LocalSearchBar 
+            isFilterActive={isFilterActive} 
+            setShowFilter={setShowFilter} 
+          />
         </View>
 
         {isFilterActive && (
@@ -523,9 +640,8 @@ export default function HomeScreen({ navigation, route }) {
             }}
           >
             {[
-              require("../../assets/banner1.jpeg"),
-              require("../../assets/banner2.jpeg"),
-              require("../../assets/banner3.jpeg"),
+              require("../../assets/banner1.jpg"),
+              require("../../assets/banner2.jpg"),
             ].map((banner, index) => (
               <Image
                 key={index}
@@ -548,7 +664,7 @@ export default function HomeScreen({ navigation, route }) {
               flexDirection: "row",
             }}
           >
-            {[0, 1, 2].map((i) => (
+            {[0, 1].map((i) => (
               <View
                 key={i}
                 style={{
@@ -660,8 +776,8 @@ export default function HomeScreen({ navigation, route }) {
                     setShowOffersOnly(true);
                     setSelectedCategory("all");
                   } else {
-                    setShowOffersOnly(false);
-                    setSelectedCategory(item.id);
+                    setActiveModalCategory(item.id);
+                    setActiveModalCategoryName(item.name);
                   }
                 }}
                 style={{
@@ -903,7 +1019,44 @@ export default function HomeScreen({ navigation, route }) {
             </Text>
           </View>
         )}
+
+        {filteredProducts.length > 0 && (
+          <View style={{ paddingHorizontal: 12, paddingBottom: 20 }}>
+            <View style={{ alignItems: "center", marginBottom: 16, marginTop: 10 }}>
+              <View style={{ backgroundColor: "rgba(165,0,33,0.08)", paddingHorizontal: 20, paddingVertical: 7, borderRadius: 18 }}>
+                <Text style={{ fontSize: 20, fontWeight: "800", color: "#A50021" }}>All Products</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+              {filteredProducts.map((product, index) => (
+                <View key={`all-${product.id}-${index}`} style={{ width: '48%', marginBottom: 12 }}>
+                  <ProductCard product={product} />
+                </View>
+              ))}
+            </View>
+            {hasMore && (
+              <TouchableOpacity
+                onPress={handleLoadMore}
+                disabled={loadingMore}
+                style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#A50021', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 16 }}
+              >
+                {loadingMore ? (
+                  <ActivityIndicator color="#A50021" size="small" />
+                ) : (
+                  <Text style={{ color: '#A50021', fontWeight: 'bold' }}>Show More</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ScrollView>
+
+      <CategoryModal 
+        visible={!!activeModalCategory} 
+        onClose={() => setActiveModalCategory(null)} 
+        categoryId={activeModalCategory} 
+        categoryName={activeModalCategoryName} 
+      />
 
       {showCartBar && totalItems > 0 && (
         <TouchableOpacity

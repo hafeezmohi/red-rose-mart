@@ -16,6 +16,7 @@ import ProfileScreen from "./src/screens/ProfileScreen";
 import AddressScreen from "./src/screens/AddressScreen";
 import WishlistScreen from "./src/screens/WishlistScreen";
 import SuccessScreen from "./src/screens/SuccessScreen";
+import SearchResultsScreen from "./src/screens/SearchResultsScreen";
 import { CartProvider } from "./src/context/CartContext";
 import { FavoritesProvider } from "./src/context/FavoritesContext";
 import { AddressProvider } from "./src/context/AddressContext";
@@ -78,6 +79,7 @@ export default function App() {
                 <Stack.Screen name="Address" component={AddressScreen} />
                 <Stack.Screen name="Wishlist" component={WishlistScreen} />
                 <Stack.Screen name="Success" component={SuccessScreen} />
+                <Stack.Screen name="SearchResults" component={SearchResultsScreen} />
               </Stack.Navigator>
             </NavigationContainer>
           </CartProvider>

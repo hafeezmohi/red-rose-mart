@@ -101,7 +101,7 @@ export default function WelcomeScreen({ navigation }) {
             textAlign: "center",
           }}
         >
-          Red Rose Online Grocery
+          Rose Mart Online Grocery
         </Text>
         <Text
           style={{

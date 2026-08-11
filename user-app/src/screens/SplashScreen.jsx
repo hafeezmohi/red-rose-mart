@@ -71,7 +71,7 @@ export default function SplashScreen({ navigation }) {
           marginTop: 16,
         }}
       >
-        Red Rose Online Grocery
+        Rose Mart Online Grocery
       </Text>
       <Text
         style={{
