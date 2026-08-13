@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Lock, Mail, ArrowLeft, ShieldCheck, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://red-rose-backend.onrender.com";
+import { API_URL } from "../../config";
 
 function ResetDetailsForm() {
   const searchParams = useSearchParams();
