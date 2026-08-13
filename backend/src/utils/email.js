@@ -24,6 +24,8 @@ export const sendEmail = async (options) => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    connectionTimeout: 10000, // Fail fast after 10 seconds if unreachable
+    greetingTimeout: 10000,
   });
 
   const mailOptions = {
