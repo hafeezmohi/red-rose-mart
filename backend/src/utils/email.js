@@ -1,8 +1,48 @@
 import nodemailer from "nodemailer";
+import { google } from "googleapis";
 
 export const sendEmail = async (options) => {
 
-  // ── Option 1: Resend (recommended for Render – uses HTTPS, no SMTP IPv6 issues) ──
+  // ── Option 1: Gmail API via OAuth2 (recommended — HTTPS, sends from your real Gmail, no SMTP port issues) ──
+  if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GMAIL_CLIENT_ID,
+      process.env.GMAIL_CLIENT_SECRET,
+      "https://developers.google.com/oauthplayground"
+    );
+    oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+    const fromHeader = `${process.env.SMTP_FROM_NAME || "Red Rose Mart"} <${process.env.GMAIL_FROM_EMAIL || process.env.SMTP_USER}>`;
+    const bodyContent = options.html || options.message;
+    const contentType = options.html ? "text/html" : "text/plain";
+
+    const rawMessage = [
+      `From: ${fromHeader}`,
+      `To: ${options.email}`,
+      `Subject: ${options.subject}`,
+      `Content-Type: ${contentType}; charset=utf-8`,
+      "",
+      bodyContent,
+    ].join("\r\n");
+
+    const encodedMessage = Buffer.from(rawMessage)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+
+    const res = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: encodedMessage },
+    });
+
+    console.log("✅ Email sent via Gmail API:", res.data.id);
+    return;
+  }
+
+  // ── Option 2: Resend (HTTPS, but sends from your own verified domain, not @gmail.com) ──
   if (process.env.RESEND_API_KEY) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -28,7 +68,7 @@ export const sendEmail = async (options) => {
     return;
   }
 
-  // ── Option 2: SMTP via Nodemailer ──
+  // ── Option 3: SMTP via Nodemailer (often blocked on Render — kept as last resort / local dev) ──
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -54,7 +94,7 @@ export const sendEmail = async (options) => {
     return;
   }
 
-  // ── Option 3: No config – log to console (for local dev) ──
+  // ── Option 4: No config – log to console (for local dev) ──
   console.warn("⚠️  No email provider configured. Logging to console instead:");
   console.log("--------------------------------------------------");
   console.log(`To: ${options.email}`);
