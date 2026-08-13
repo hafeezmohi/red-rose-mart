@@ -32,14 +32,14 @@ export default function PrintableReceipt({ order }) {
             <style dangerouslySetInnerHTML={{
                 __html: `
                     @media print {
-                        @page { margin: 0; }
-                        body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+                        @page { margin: 0; padding: 0; size: 80mm auto; }
+                        html, body { background: white; margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; }
                     }
                 `
             }} />
 
             {/* --- Print Receipt Layout (Hidden on Screen, Visible on Print) --- */}
-            <div className="hidden print:block w-[80mm] p-2 text-black text-xs mx-auto font-sans" style={{ maxWidth: "80mm" }}>
+            <div className="hidden print:block w-[80mm] p-2 text-black text-xs font-sans" style={{ maxWidth: "80mm", margin: 0 }}>
                 {/* Header */}
                 <div className="text-center mb-2 leading-tight">
                     <h1 className="font-extrabold text-[22px] m-0 mb-1">Red Rose Mart</h1>
