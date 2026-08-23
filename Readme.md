@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./user-app/assets/icon.png" alt="Red Rose Mart Logo" width="120" />
 
-  # 🏪 Red Rose Mart
+  # 🏪 Rose Mart
 
   **A modern, full-stack e-commerce grocery platform built for speed, scale, and a seamless user experience.**
 
@@ -26,7 +26,7 @@ This project was architected, designed, and developed by:
 
 ## 🌟 Overview
 
-**Red Rose Mart** is a complete, end-to-end e-commerce ecosystem consisting of three primary components:
+**Rose Mart** is a complete, end-to-end e-commerce ecosystem consisting of three primary components:
 
 1. **User Mobile App**: A sleek, responsive, and intuitive React Native application built with Expo for iOS and Android.
 2. **Admin Dashboard**: A powerful Next.js web panel for real-time inventory, order, and user management.
